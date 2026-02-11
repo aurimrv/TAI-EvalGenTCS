@@ -5,6 +5,7 @@ Implements rate limiting and retry logic.
 
 import time
 import json
+import re
 from typing import Dict, Optional
 from openai import OpenAI
 import logging
@@ -108,11 +109,17 @@ class LLMClient:
                 }
                 
                 # Add response format if provided
+                # Note: Some models don't support strict JSON schema mode
                 if response_format:
-                    request_params["response_format"] = {
-                        "type": "json_schema",
-                        "json_schema": response_format
-                    }
+                    try:
+                        request_params["response_format"] = {
+                            "type": "json_schema",
+                            "json_schema": response_format
+                        }
+                    except Exception as e:
+                        logger.warning(f"Model may not support strict JSON schema mode: {e}")
+                        # Fallback to basic JSON mode
+                        request_params["response_format"] = {"type": "json_object"}
                 
                 # Make API call
                 response = self.client.chat.completions.create(**request_params)
@@ -147,7 +154,7 @@ class LLMClient:
         json_schema: Optional[Dict] = None
     ) -> Dict:
         """
-        Generate JSON completion from LLM.
+        Generate JSON completion from LLM with robust parsing.
         
         Args:
             system_prompt: System prompt defining behavior
@@ -158,7 +165,7 @@ class LLMClient:
             Parsed JSON response as dictionary
         
         Raises:
-            json.JSONDecodeError: If response is not valid JSON
+            json.JSONDecodeError: If response cannot be parsed as valid JSON
         """
         # Request JSON format in system prompt
         enhanced_system_prompt = system_prompt + "\n\nYou MUST respond with valid JSON only."
@@ -169,13 +176,91 @@ class LLMClient:
             response_format=json_schema
         )
         
-        # Parse JSON
+        # Sanitize and parse JSON
         try:
-            return json.loads(response)
+            # Remove code block delimiters if present (```json ... ```)
+            cleaned_response = self._sanitize_json_response(response)
+            
+            # Parse JSON
+            return json.loads(cleaned_response)
+            
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse JSON response: {e}")
-            logger.debug(f"Response content: {response}")
+            logger.debug(f"Response content (first 500 chars): {response[:500]}")
+            logger.debug(f"Response content (last 500 chars): {response[-500:]}")
+            
+            # Try to extract JSON from the response
+            extracted_json = self._extract_json_from_text(response)
+            if extracted_json:
+                logger.info("Successfully extracted JSON from malformed response")
+                return json.loads(extracted_json)
+            
+            # If all else fails, raise the original error
             raise
+    
+    def _sanitize_json_response(self, response: str) -> str:
+        """
+        Sanitize LLM response by removing code block delimiters.
+        
+        Args:
+            response: Raw LLM response
+        
+        Returns:
+            Cleaned response
+        """
+        # Remove code block delimiters (```json ... ``` or ``` ... ```)
+        cleaned = response.strip()
+        
+        # Remove leading code block marker
+        if cleaned.startswith('```json'):
+            cleaned = cleaned[7:]  # Remove ```json
+        elif cleaned.startswith('```'):
+            cleaned = cleaned[3:]   # Remove ```
+        
+        # Remove trailing code block marker
+        if cleaned.endswith('```'):
+            cleaned = cleaned[:-3]  # Remove ```
+        
+        return cleaned.strip()
+    
+    def _extract_json_from_text(self, text: str) -> Optional[str]:
+        """
+        Attempt to extract JSON object from text that may contain other content.
+        
+        Args:
+            text: Text that may contain JSON
+        
+        Returns:
+            Extracted JSON string or None
+        """
+        try:
+            # Try to find JSON object by looking for balanced braces
+            brace_count = 0
+            start_index = -1
+            
+            for i, char in enumerate(text):
+                if char == '{':
+                    if brace_count == 0:
+                        start_index = i
+                    brace_count += 1
+                elif char == '}':
+                    brace_count -= 1
+                    if brace_count == 0 and start_index != -1:
+                        # Found a complete JSON object
+                        potential_json = text[start_index:i+1]
+                        # Validate it's actually JSON
+                        try:
+                            json.loads(potential_json)
+                            return potential_json
+                        except json.JSONDecodeError:
+                            # Continue searching
+                            start_index = -1
+            
+            return None
+            
+        except Exception as e:
+            logger.debug(f"Failed to extract JSON from text: {e}")
+            return None
     
     def __repr__(self) -> str:
         return f"LLMClient(model={self.settings.llm_model})"

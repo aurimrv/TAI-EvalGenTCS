@@ -59,6 +59,7 @@ class Settings:
         # Application Configuration
         self.app_name = os.getenv('APP_NAME', 'TAI-EvalGenTCS')
         self.app_version = os.getenv('APP_VERSION', '1.0.0')
+        self.log_level = os.getenv('LOG_LEVEL', 'INFO')
         
         # Paths
         self.project_root = Path(__file__).parent.parent.parent

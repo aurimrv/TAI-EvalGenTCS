@@ -4,7 +4,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- * Test class for UserService
+ * Test class for UserService.
  */
 public class UserServiceTest {
     

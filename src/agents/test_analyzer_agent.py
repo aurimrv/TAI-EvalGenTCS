@@ -57,11 +57,21 @@ class TestAnalyzerAgent:
         
         # Call LLM
         logger.debug("Sending analysis request to LLM...")
-        result = self.llm_client.generate_json_completion(
-            system_prompt=system_prompt,
-            user_message=user_message,
-            json_schema=json_schema
-        )
+        try:
+            result = self.llm_client.generate_json_completion(
+                system_prompt=system_prompt,
+                user_message=user_message,
+                json_schema=json_schema
+            )
+        except Exception as e:
+            logger.error(f"Failed to get valid JSON response from LLM: {e}")
+            logger.info("Retrying without strict JSON schema...")
+            # Retry without strict schema for models that don't support it
+            result = self.llm_client.generate_json_completion(
+                system_prompt=system_prompt,
+                user_message=user_message,
+                json_schema=None
+            )
         
         logger.info(f"Analysis completed for {test_class_name}")
         
@@ -69,27 +79,27 @@ class TestAnalyzerAgent:
     
     def _build_system_prompt(self, mode: str) -> str:
         """Build system prompt based on mode."""
-        base_prompt = """Você é um especialista em testes de software e boas práticas para escrita de casos de teste. 
-Sua tarefa é analisar o código de teste fornecido e compará-lo com as **25 boas práticas** listadas abaixo.
+        base_prompt = """You are an expert in software testing and best practices for writing test cases. 
+Your task is to analyze the provided test code and compare it against the **25 best practices** listed below.
 
-📌 **Requisitos Estritos de Saída**
-- Sempre retorne a resposta em **formato JSON válido** seguindo o JSON Schema fornecido.
-- **Não inclua nenhum texto ou explicação** fora da estrutura JSON.
-- Toda resposta **deve conter avaliações de todas as 25 boas práticas**, mesmo que algumas não sejam aplicáveis.
-- O campo `"status"` deve sempre ser um dos seguintes:
-  - `"✔️"` (Atende)
-  - `"❌"` (Não Atende)
-  - `"⚪"` (Não Aplicável)
-- O `"compliance_score"` deve ser calculado como **(práticas ✔️ / 25) * 100** e retornado como string com porcentagem (ex: `"85%"`).
+📌 **Strict Output Requirements**
+- Always return the response in **valid JSON format** following the provided JSON Schema.
+- **Do not include any text or explanation** outside the JSON structure.
+- Every response **must contain evaluations for all 25 best practices**, even if some are not applicable.
+- The `"status"` field must always be one of the following:
+  - `"✔️"` (Compliant)
+  - `"❌"` (Non-Compliant)
+  - `"⚪"` (Not Applicable)
+- The `"compliance_score"` must be calculated as **(compliant practices ✔️ / 25) * 100** and returned as a string with a percentage (e.g., `"85%"`).
 """
         
         if mode == 'improve':
-            base_prompt += """- O campo "suggested_code" deve ser uma versão completamente formatada e melhorada do caso de teste, 
-implementando todas as boas práticas aplicáveis enquanto mantém a lógica original. 
-As melhorias devem seguir as 25 boas práticas garantindo que nem a cobertura de testes 
-nem o mutation score sejam afetados. Quaisquer modificações devem preservar a efetividade 
-da suite de testes, garantindo que todos os edge cases e possíveis mutações permaneçam 
-adequadamente validados.
+            base_prompt += """- The "suggested_code" field must be a fully formatted and improved version of the test case, 
+implementing all applicable best practices while maintaining the original logic. 
+The improvements must follow the 25 best practices, ensuring that neither test coverage 
+nor mutation score is affected. Any modifications must preserve the effectiveness 
+of the test suite, ensuring that all edge cases and possible mutations remain 
+adequately validated.
 
 """
         
@@ -100,15 +110,15 @@ adequadamente validados.
     
     def _build_user_message(self, test_code: str, test_class_name: str) -> str:
         """Build user message with test code."""
-        return f"""Analise a seguinte classe de teste e avalie cada uma das 25 boas práticas:
+        return f"""Analyze the following test class and evaluate each of the 25 best practices:
 
-**Classe de Teste:** {test_class_name}
+**Test Class:** {test_class_name}
 
 ```
 {test_code}
 ```
 
-Por favor, forneça a análise completa em formato JSON conforme especificado.
+Please provide the complete analysis in the specified JSON format.
 """
     
     def _get_json_schema(self) -> Dict:

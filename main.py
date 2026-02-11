@@ -4,8 +4,7 @@ TAI-EvalGenTCS CLI - Test AI Evaluator and Generator of Test Case Suites
 Command-line interface for evaluating and improving test suites based on best practices.
 
 Author: Camilo Hernán Villota Ibarra
-Based on PhD Thesis: "Towards a strategy and tool support for test generation 
-based on good software testing practices: classification and prioritization"
+Based on PhD Thesis: "Towards a strategy and tool support for test generation based on good software testing practices: classification and prioritization"
 """
 
 import argparse
@@ -71,7 +70,13 @@ Examples:
     parser.add_argument(
         '--verbose',
         action='store_true',
-        help='Enable verbose logging'
+        help='Enable verbose logging (DEBUG level)'
+    )
+    parser.add_argument(
+        '--log-level',
+        type=str,
+        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+        help='Set logging level (overrides --verbose and .env LOG_LEVEL)'
     )
     parser.add_argument(
         '--config',
@@ -105,16 +110,21 @@ def main():
     """Main entry point for the CLI application."""
     args = parse_arguments()
     
-    # Setup logger
-    logger = setup_logger(verbose=args.verbose)
+    # Load settings first to get log level from .env
+    settings = Settings(config_path=args.config)
+    
+    # Setup logger with priority: CLI --log-level > CLI --verbose > .env LOG_LEVEL
+    log_level = args.log_level if args.log_level else (None if not args.verbose else 'DEBUG')
+    if not log_level:
+        log_level = settings.log_level
+    
+    logger = setup_logger(log_level=log_level)
     logger.info("TAI-EvalGenTCS CLI - Starting...")
     
     # Validate arguments
     test_set_path, output_dir = validate_arguments(args)
     
     try:
-        # Load settings
-        settings = Settings(config_path=args.config)
         
         # Override LLM model if specified
         if args.llm_model:

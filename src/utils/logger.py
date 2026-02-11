@@ -9,14 +9,17 @@ from typing import Optional
 
 def setup_logger(
     name: Optional[str] = None,
-    verbose: bool = False
+    verbose: bool = False,
+    log_level: Optional[str] = None
 ) -> logging.Logger:
     """
-    Setup and configure logger.
+    Setup and configure logger with timestamps and configurable levels.
     
     Args:
         name: Logger name (defaults to root logger)
         verbose: Enable verbose (DEBUG) logging
+        log_level: Log level as string ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
+                  Overrides verbose parameter if provided
     
     Returns:
         Configured logger instance
@@ -24,8 +27,16 @@ def setup_logger(
     # Get logger
     logger = logging.getLogger(name)
     
-    # Set level
-    level = logging.DEBUG if verbose else logging.INFO
+    # Determine log level
+    if log_level:
+        # Convert string to logging level
+        numeric_level = getattr(logging, log_level.upper(), None)
+        if not isinstance(numeric_level, int):
+            raise ValueError(f'Invalid log level: {log_level}')
+        level = numeric_level
+    else:
+        level = logging.DEBUG if verbose else logging.INFO
+    
     logger.setLevel(level)
     
     # Remove existing handlers
@@ -35,16 +46,11 @@ def setup_logger(
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(level)
     
-    # Create formatter
-    if verbose:
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S'
-        )
-    else:
-        formatter = logging.Formatter(
-            '%(levelname)s: %(message)s'
-        )
+    # Create formatter with timestamp
+    formatter = logging.Formatter(
+        '%(asctime)s - %(levelname)s - %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
     
     console_handler.setFormatter(formatter)
     

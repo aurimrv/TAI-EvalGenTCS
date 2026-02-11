@@ -46,19 +46,19 @@ class BestPractice:
     def get_full_description(self) -> str:
         """Get full description for LLM prompt (improve mode)."""
         description = f"{self.code}: {self.title}\n"
-        description += f"Princípio: {self.principle}\n"
+        description += f"Principle: {self.principle}\n"
         
         if self.rationale:
-            description += "Por quê?\n"
+            description += "Why?\n"
             for reason in self.rationale:
                 description += f"- {reason}\n"
         
         if self.evaluation_criteria:
-            description += "\nCritérios de Avaliação:\n"
+            description += "\nEvaluation Criteria:\n"
             if 'positive' in self.evaluation_criteria:
-                description += f"✔️ Atende: {self.evaluation_criteria['positive']}\n"
+                description += f"✔️ Compliant: {self.evaluation_criteria['positive']}\n"
             if 'negative' in self.evaluation_criteria:
-                description += f"❌ Não atende: {self.evaluation_criteria['negative']}\n"
+                description += f"❌ Non-Compliant: {self.evaluation_criteria['negative']}\n"
         
         return description
     
@@ -145,7 +145,7 @@ class PracticeManager:
     
     def _generate_compact_prompt(self) -> str:
         """Generate compact prompt for check mode."""
-        prompt = "📌 **Definição das 25 Boas Práticas**\n\n"
+        prompt = "📌 **Definition of the 25 Best Practices**\n\n"
         
         # Common Sense practices
         cs_practices = self.get_practices_by_category('Common Sense')
@@ -163,7 +163,7 @@ class PracticeManager:
     
     def _generate_full_prompt(self) -> str:
         """Generate full prompt for improve mode."""
-        prompt = "📌 **Definição das 25 Boas Práticas**\n\n"
+        prompt = "📌 **Definition of the 25 Best Practices**\n\n"
         
         # Common Sense practices
         cs_practices = self.get_practices_by_category('Common Sense')
