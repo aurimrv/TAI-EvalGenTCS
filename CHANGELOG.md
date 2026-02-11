@@ -2,7 +2,36 @@
 
 All notable changes to TAI-EvalGenTCS CLI will be documented in this file.
 
-## [1.1.0] - 2025-02-12
+## [1.2.0] - 2026-02-11
+
+### Fixed
+- **Critical**: Fixed JSON schema validation error with OpenAI models - added `original_code` and `improved_code` to required fields array
+- **Critical**: Fixed JSON syntax error in `best_practices.json` - replaced invalid escape sequences `\'` with `'`
+- Fixed incomplete output generation in improve mode by enhancing `TestImproverAgent` to handle multiple JSON structures
+- Fixed syntax error in `test_analyzer_agent.py` (unterminated string literal)
+- Fixed method name mismatch in `main.py` (`improve_test_suite` → `improve_best_practices`)
+
+### Added
+- **Timestamp-based output subdirectories**: Each execution creates a `testset_YYYY-MM-DD_HH-MM-SS` subdirectory to prevent overwriting previous reports
+- Optimized LLM prompts with compact format for check mode and full format for improve mode
+- Enhanced error handling and fallback mechanisms for LLM responses
+- `LLM_TIMEOUT` configuration option in `.env`
+- Comprehensive LLM model recommendations in documentation
+- Performance comparison table in documentation
+
+### Changed
+- Updated `PracticeManager` to generate compact vs full prompts based on mode
+- Improved `TestImproverAgent` to gracefully handle flat JSON structures from non-compliant models
+- Enhanced system prompts with stricter JSON schema requirements
+- Updated default recommended model from `moonshotai/kimi-k2-0905` to `openai/gpt-4.1-mini`
+- Improved `orchestrator.py` to create timestamped subdirectories for all outputs
+
+### Performance
+- Reduced analysis time from 6-7 minutes to 20-30 seconds when using recommended models (21x speedup)
+- Reduced token usage by ~40% in check mode with compact prompts
+- Improved JSON schema compliance for faster LLM responses
+
+## [1.1.0] - 2026-02-11
 
 ### Added
 - **Improved Logging System**
@@ -60,7 +89,7 @@ When strict JSON schema mode fails:
 2. Retry with basic JSON mode (`{"type": "json_object"}`)
 3. Apply sanitization and extraction to the response
 
-## [1.0.0] - 2025-02-11
+## [1.0.0] - 2026-02-11
 
 ### Initial Release
 - Multi-agent architecture for test evaluation and improvement

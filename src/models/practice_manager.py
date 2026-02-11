@@ -40,8 +40,9 @@ class BestPractice:
         }
     
     def get_compact_description(self) -> str:
-        """Get compact description for LLM prompt (check mode)."""
-        return f"{self.code}: {self.title}\n- {self.principle}"
+        """Get ultra-compact description for LLM prompt (check mode)."""
+        # Ultra-compact format: just code, title, and principle
+        return f"{self.code}: {self.title} - {self.principle}"
     
     def get_full_description(self) -> str:
         """Get full description for LLM prompt (improve mode)."""
@@ -86,10 +87,9 @@ class PracticeManager:
             data = json.load(f)
         
         self.version = data.get('version', '1.0.0')
-        self.source = data.get('source', '')
-        self.author = data.get('author', '')
+        self.description = data.get('description', '')
         
-        for practice_data in data['practices']:
+        for practice_data in data.get('practices', []):
             practice = BestPractice(practice_data)
             self.practices.append(practice)
     
@@ -144,56 +144,49 @@ class PracticeManager:
             return self._generate_full_prompt()
     
     def _generate_compact_prompt(self) -> str:
-        """Generate compact prompt for check mode."""
-        prompt = "📌 **Definition of the 25 Best Practices**\n\n"
+        """Generate ultra-compact prompt for check mode."""
+        prompt = "\n📌 **25 Best Practices** (Compact Format)\n\n"
         
-        # Common Sense practices
-        cs_practices = self.get_practices_by_category('Common Sense')
-        prompt += "### **Common Sense Practices**\n"
+        # Group by category for better organization
+        cs_practices = self.get_practices_by_category("Common Sense")
+        ls_practices = self.get_practices_by_category("Literature Supported")
+        
+        # Common Sense practices (ultra-compact)
+        prompt += "**Common Sense (CS-01 to CS-14):**\n"
         for practice in cs_practices:
-            prompt += f"{practice.get_compact_description()}\n\n"
+            prompt += f"- {practice.get_compact_description()}\n"
         
-        # Literature Supported practices
-        ls_practices = self.get_practices_by_category('Literature Supported')
-        prompt += "### **Literature Supported Practices**\n"
+        prompt += "\n**Literature Supported (LS-01 to LS-11):**\n"
         for practice in ls_practices:
-            prompt += f"{practice.get_compact_description()}\n\n"
+            prompt += f"- {practice.get_compact_description()}\n"
         
         return prompt
     
     def _generate_full_prompt(self) -> str:
         """Generate full prompt for improve mode."""
-        prompt = "📌 **Definition of the 25 Best Practices**\n\n"
+        prompt = "\n📌 **Definition of the 25 Best Practices**\n\n"
+        
+        # Group by category
+        cs_practices = self.get_practices_by_category("Common Sense")
+        ls_practices = self.get_practices_by_category("Literature Supported")
         
         # Common Sense practices
-        cs_practices = self.get_practices_by_category('Common Sense')
-        prompt += "### **Common Sense Practices**\n\n"
+        prompt += "### Common Sense practices\n\n"
         for practice in cs_practices:
-            prompt += f"{practice.get_full_description()}\n---\n\n"
+            prompt += practice.get_full_description() + "\n"
         
         # Literature Supported practices
-        ls_practices = self.get_practices_by_category('Literature Supported')
-        prompt += "### **Literature Supported Practices**\n\n"
+        prompt += "\n### Literature Supported practices\n\n"
         for practice in ls_practices:
-            prompt += f"{practice.get_full_description()}\n---\n\n"
+            prompt += practice.get_full_description() + "\n"
         
         return prompt
     
-    def get_practice_summary(self) -> Dict[str, int]:
+    def get_summary(self) -> Dict:
         """Get summary of practices by category."""
-        cs_count = len(self.get_practices_by_category('Common Sense'))
-        ls_count = len(self.get_practices_by_category('Literature Supported'))
-        
         return {
-            'total': self.get_practice_count(),
-            'common_sense': cs_count,
-            'literature_supported': ls_count,
+            'total': len(self.practices),
+            'common_sense': len(self.get_practices_by_category("Common Sense")),
+            'literature_supported': len(self.get_practices_by_category("Literature Supported")),
+            'version': self.version
         }
-    
-    def __repr__(self) -> str:
-        summary = self.get_practice_summary()
-        return (
-            f"PracticeManager(total={summary['total']}, "
-            f"CS={summary['common_sense']}, "
-            f"LS={summary['literature_supported']})"
-        )

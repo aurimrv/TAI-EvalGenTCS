@@ -6,6 +6,7 @@ import json
 import logging
 from pathlib import Path
 from typing import Dict
+from datetime import datetime
 
 from src.models.practice_manager import PracticeManager
 from src.services.llm_client import LLMClient
@@ -51,6 +52,12 @@ class TestEvaluationOrchestrator:
         Returns:
             Dictionary with results including report path and compliance score
         """
+        # Create timestamp-based subdirectory
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        timestamped_output_dir = output_dir / f"testset_{timestamp}"
+        timestamped_output_dir.mkdir(parents=True, exist_ok=True)
+        logger.info(f"Output will be saved to: {timestamped_output_dir}")
+        
         logger.info(f"Checking best practices for: {test_set_path}")
         
         # Read test code
@@ -70,7 +77,7 @@ class TestEvaluationOrchestrator:
         report_path = self._save_report(
             analysis_result,
             test_set_path,
-            output_dir
+            timestamped_output_dir
         )
         
         # Extract compliance score
@@ -79,12 +86,12 @@ class TestEvaluationOrchestrator:
         logger.info(f"Best practices check completed. Score: {compliance_score}")
         
         return {
-            'report_path': str(report_path),
+            'report_path': report_path,
             'compliance_score': compliance_score,
-            'analysis_result': analysis_result
+            'output_dir': timestamped_output_dir
         }
     
-    def improve_test_suite(
+    def improve_best_practices(
         self,
         test_set_path: Path,
         output_dir: Path
@@ -99,6 +106,12 @@ class TestEvaluationOrchestrator:
         Returns:
             Dictionary with results including improved test path, report path, and compliance score
         """
+        # Create timestamp-based subdirectory
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        timestamped_output_dir = output_dir / f"testset_{timestamp}"
+        timestamped_output_dir.mkdir(parents=True, exist_ok=True)
+        logger.info(f"Output will be saved to: {timestamped_output_dir}")
+        
         logger.info(f"Improving test suite for: {test_set_path}")
         
         # Read test code
@@ -124,22 +137,21 @@ class TestEvaluationOrchestrator:
         improved_test_path = self._save_improved_test(
             improved_code,
             test_set_path,
-            output_dir
+            timestamped_output_dir
         )
         
         # Save report
         report_path = self._save_report(
             analysis_result,
             test_set_path,
-            output_dir
+            timestamped_output_dir
         )
         
         # Generate and save improvement summary
-        summary = self.improver_agent.generate_improvement_summary(analysis_result)
-        summary_path = self._save_summary(
-            summary,
+        summary_path = self._save_improvement_summary(
+            analysis_result,
             test_set_path,
-            output_dir
+            timestamped_output_dir
         )
         
         # Extract compliance score
@@ -148,16 +160,15 @@ class TestEvaluationOrchestrator:
         logger.info(f"Test suite improvement completed. Score: {compliance_score}")
         
         return {
-            'improved_test_path': str(improved_test_path),
-            'report_path': str(report_path),
-            'summary_path': str(summary_path),
+            'improved_test_path': improved_test_path,
+            'report_path': report_path,
+            'summary_path': summary_path,
             'compliance_score': compliance_score,
-            'analysis_result': analysis_result
+            'output_dir': timestamped_output_dir
         }
     
     def _read_test_file(self, test_set_path: Path) -> str:
         """Read test file content."""
-        logger.debug(f"Reading test file: {test_set_path}")
         with open(test_set_path, 'r', encoding='utf-8') as f:
             return f.read()
     
@@ -173,14 +184,11 @@ class TestEvaluationOrchestrator:
         report_filename = f"{test_name}_bp_report.json"
         report_path = output_dir / report_filename
         
-        logger.debug(f"Saving report to: {report_path}")
-        
         # Save JSON report
         with open(report_path, 'w', encoding='utf-8') as f:
             json.dump(analysis_result, f, indent=2, ensure_ascii=False)
         
         logger.info(f"Report saved: {report_path}")
-        
         return report_path
     
     def _save_improved_test(
@@ -196,19 +204,16 @@ class TestEvaluationOrchestrator:
         improved_filename = f"{test_name}_improved{extension}"
         improved_path = output_dir / improved_filename
         
-        logger.debug(f"Saving improved test to: {improved_path}")
-        
         # Save improved code
         with open(improved_path, 'w', encoding='utf-8') as f:
             f.write(improved_code)
         
         logger.info(f"Improved test saved: {improved_path}")
-        
         return improved_path
     
-    def _save_summary(
+    def _save_improvement_summary(
         self,
-        summary: str,
+        analysis_result: Dict,
         test_set_path: Path,
         output_dir: Path
     ) -> Path:
@@ -218,15 +223,12 @@ class TestEvaluationOrchestrator:
         summary_filename = f"{test_name}_improvement_summary.md"
         summary_path = output_dir / summary_filename
         
-        logger.debug(f"Saving summary to: {summary_path}")
+        # Generate summary
+        summary = self.improver_agent.generate_improvement_summary(analysis_result)
         
         # Save summary
         with open(summary_path, 'w', encoding='utf-8') as f:
             f.write(summary)
         
         logger.info(f"Summary saved: {summary_path}")
-        
         return summary_path
-    
-    def __repr__(self) -> str:
-        return f"TestEvaluationOrchestrator(practices={self.practice_manager.get_practice_count()})"

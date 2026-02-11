@@ -148,7 +148,7 @@ def main():
             logger.info(f"Overall compliance score: {result['compliance_score']}")
         else:
             logger.info("Improving test suite based on best practices...")
-            result = orchestrator.improve_test_suite(test_set_path, output_dir)
+            result = orchestrator.improve_best_practices(test_set_path, output_dir)
             logger.info(f"Improved test suite: {result['improved_test_path']}")
             logger.info(f"Report generated: {result['report_path']}")
             logger.info(f"Overall compliance score: {result['compliance_score']}")

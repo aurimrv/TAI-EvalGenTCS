@@ -82,16 +82,27 @@ class TestAnalyzerAgent:
         base_prompt = """You are an expert in software testing and best practices for writing test cases. 
 Your task is to analyze the provided test code and compare it against the **25 best practices** listed below.
 
-📌 **Strict Output Requirements**
-- Always return the response in **valid JSON format** following the provided JSON Schema.
-- **Do not include any text or explanation** outside the JSON structure.
-- Every response **must contain evaluations for all 25 best practices**, even if some are not applicable.
-- The `"status"` field must always be one of the following:
-  - `"✔️"` (Compliant)
-  - `"❌"` (Non-Compliant)
-  - `"⚪"` (Not Applicable)
-- The `"compliance_score"` must be calculated as **(compliant practices ✔️ / 25) * 100** and returned as a string with a percentage (e.g., `"85%"`).
-"""
+📌 **CRITICAL: Strict JSON Schema Requirements**
+- You MUST return ONLY valid JSON following the exact schema provided
+- DO NOT return a flat structure with practice codes as keys
+- The response MUST have this structure:
+  {
+    "test_class_name": "ClassName",
+    "test_methods": [
+      {
+        "test_method_name": "methodName",
+        "practices_evaluation": [...],
+        "method_compliance_score": "X%",
+        "suggested_code": "..."
+      }
+    ],
+    "practices_report": [...],
+    "overall_compliance_score": "X%"
+  }
+- Every test method MUST have evaluations for all 25 practices
+- The `"status"` field must be: `"✔️"` (Compliant), `"❌"` (Non-Compliant), or `"⚪"` (Not Applicable)
+- Compliance scores are calculated as: (compliant ✔️ / 25) * 100 and formatted as "X%"
+- DO NOT include any text outside the JSON structure"""
         
         if mode == 'improve':
             base_prompt += """- The "suggested_code" field must be a fully formatted and improved version of the test case, 
@@ -152,7 +163,7 @@ Please provide the complete analysis in the specified JSON format.
                                             "original_code": {"type": ["string", "null"]},
                                             "improved_code": {"type": ["string", "null"]}
                                         },
-                                        "required": ["practice_code", "practice_title", "status", "justification"],
+                                        "required": ["practice_code", "practice_title", "status", "justification", "original_code", "improved_code"],
                                         "additionalProperties": False
                                     }
                                 },

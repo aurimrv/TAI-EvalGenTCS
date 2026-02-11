@@ -32,6 +32,25 @@ class TestImproverAgent:
         """
         logger.info("Generating improved test suite...")
         
+        # Check if analysis result has the expected structure
+        if 'test_methods' in analysis_result:
+            # Standard structure with test_methods
+            return self._generate_from_standard_structure(analysis_result, original_code)
+        elif 'suggested_code' in analysis_result:
+            # Flat structure with single suggested_code (fallback from some models)
+            logger.warning("Analysis result has flat structure, using suggested_code directly")
+            return analysis_result['suggested_code']
+        else:
+            # Completely unexpected structure
+            logger.error("Analysis result has unexpected structure, returning original code")
+            return original_code
+    
+    def _generate_from_standard_structure(
+        self,
+        analysis_result: Dict,
+        original_code: str
+    ) -> str:
+        """Generate improved code from standard analysis structure."""
         # Extract test class name
         test_class_name = analysis_result.get('test_class_name', 'UnknownTestClass')
         
@@ -55,10 +74,13 @@ class TestImproverAgent:
         
         # Add improved test methods
         test_methods = analysis_result.get('test_methods', [])
-        for method in test_methods:
-            suggested_code = method.get('suggested_code', '')
-            if suggested_code:
-                improved_code_parts.append(f"    {suggested_code}\n\n")
+        if test_methods:
+            for method in test_methods:
+                suggested_code = method.get('suggested_code', '')
+                if suggested_code:
+                    improved_code_parts.append(f"    {suggested_code}\n\n")
+        else:
+            logger.warning("No test methods found in analysis result")
         
         # Add closing brace
         improved_code_parts.append("}\n")
@@ -114,57 +136,48 @@ class TestImproverAgent:
         Returns:
             Summary as formatted string
         """
-        summary_parts = []
+        test_class_name = analysis_result.get('test_class_name', 'Unknown')
+        overall_score = analysis_result.get('overall_compliance_score', 'N/A')
         
-        summary_parts.append("# Test Suite Improvement Summary\n")
-        summary_parts.append(f"## Test Class: {analysis_result.get('test_class_name', 'Unknown')}\n")
-        summary_parts.append(f"## Overall Compliance Score: {analysis_result.get('overall_compliance_score', 'N/A')}\n\n")
+        summary = f"# Test Suite Improvement Summary\n"
+        summary += f"## Test Class: {test_class_name}\n"
+        summary += f"## Overall Compliance Score: {overall_score}\n\n"
         
         # Practices summary
-        summary_parts.append("## Best Practices Compliance\n\n")
-        practices_report = analysis_result.get('practices_report', [])
+        summary += "## Best Practices Compliance\n\n"
         
-        for practice in practices_report:
-            code = practice.get('practice_code', '')
-            title = practice.get('practice_title', '')
-            score = practice.get('compliance_score', 'N/A')
-            compliant = practice.get('compliant_methods', 0)
-            non_compliant = practice.get('non_compliant_methods', 0)
-            
-            status_emoji = "✅" if score == "100%" else "⚠️" if score != "N/A" else "⚪"
-            
-            summary_parts.append(
-                f"{status_emoji} **{code}: {title}**\n"
-                f"   - Score: {score}\n"
-                f"   - Compliant: {compliant}, Non-compliant: {non_compliant}\n\n"
-            )
+        practices_report = analysis_result.get('practices_report', [])
+        if practices_report:
+            for practice in practices_report:
+                code = practice.get('practice_code', 'N/A')
+                title = practice.get('practice_title', 'N/A')
+                compliance = practice.get('compliance_score', 'N/A')
+                summary += f"- **{code}**: {title} - {compliance}\n"
+        else:
+            summary += "*No practices report available*\n"
         
         # Method-level improvements
-        summary_parts.append("## Method-Level Improvements\n\n")
+        summary += "\n## Method-Level Improvements\n\n"
+        
         test_methods = analysis_result.get('test_methods', [])
+        if test_methods:
+            for method in test_methods:
+                method_name = method.get('test_method_name', 'Unknown')
+                method_score = method.get('method_compliance_score', 'N/A')
+                summary += f"### {method_name} (Score: {method_score})\n\n"
+                
+                # List non-compliant practices
+                practices_eval = method.get('practices_evaluation', [])
+                non_compliant = [p for p in practices_eval if p.get('status') == '❌']
+                
+                if non_compliant:
+                    summary += "**Issues Found:**\n"
+                    for practice in non_compliant:
+                        code = practice.get('practice_code', 'N/A')
+                        justification = practice.get('justification', 'N/A')
+                        summary += f"- **{code}**: {justification}\n"
+                    summary += "\n"
+        else:
+            summary += "*No method-level information available*\n"
         
-        for method in test_methods:
-            method_name = method.get('test_method_name', 'Unknown')
-            method_score = method.get('method_compliance_score', 'N/A')
-            
-            summary_parts.append(f"### {method_name}\n")
-            summary_parts.append(f"Compliance Score: {method_score}\n\n")
-            
-            # List non-compliant practices
-            practices_eval = method.get('practices_evaluation', [])
-            non_compliant_practices = [
-                p for p in practices_eval if p.get('status') == '❌'
-            ]
-            
-            if non_compliant_practices:
-                summary_parts.append("**Issues Found:**\n")
-                for practice in non_compliant_practices:
-                    summary_parts.append(
-                        f"- {practice.get('practice_code')}: {practice.get('justification')}\n"
-                    )
-                summary_parts.append("\n")
-        
-        return ''.join(summary_parts)
-    
-    def __repr__(self) -> str:
-        return "TestImproverAgent()"
+        return summary

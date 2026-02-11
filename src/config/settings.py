@@ -41,8 +41,8 @@ class Settings:
         # LLM Configuration
         self.llm_model = os.getenv('LLM_MODEL', 'openai/gpt-4.1-mini')
         self.llm_temperature = float(os.getenv('LLM_TEMPERATURE', '0.1'))
-        self.llm_max_tokens = int(os.getenv('LLM_MAX_TOKENS', '4000'))
-        
+        self.llm_max_tokens = int(os.getenv('LLM_MAX_TOKENS', '16000'))
+        self.llm_timeout = int(os.getenv('LLM_TIMEOUT', '300'))  # 5 minutes default        
         # Rate Limiting Configuration
         self.rate_limit_requests_per_minute = int(
             os.getenv('RATE_LIMIT_REQUESTS_PER_MINUTE', '60')
