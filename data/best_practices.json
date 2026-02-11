@@ -46,7 +46,7 @@
       "examples": {
         "violation": {
           "language": "java",
-          "code": "private static User user;\n\n@Test\npublic void test1_CreateUser() {\n    user = new User(); // State is shared\n}\n\n@Test\npublic void test2_UpdateUser() {\n    assertNotNull(user); // Depends on test1\n    user.setName(\'New Name\');\n}"
+          "code": "private static User user;\n\n@Test\npublic void test1_CreateUser() {\n    user = new User(); // State is shared\n}\n\n@Test\npublic void test2_UpdateUser() {\n    assertNotNull(user); // Depends on test1\n    user.setName('New Name');\n}"
         },
         "correct": {
           "language": "java",
@@ -80,554 +80,554 @@
       }
     },
     {
-        "code": "CS-04",
-        "title": "Boundary Value Analysis",
-        "category": "Common Sense",
-        "principle": "Test cases should focus on the boundary values of input domains.",
-        "rationale": [
-            "Errors often occur at the boundaries of input ranges (e.g., min, max, just inside/outside).",
-            "It is an efficient technique to find errors with a small number of test cases.",
-            "It helps to verify that the logic for handling limits is correctly implemented."
-        ],
-        "evaluation_criteria": {
-            "positive": "There are tests for minimum, maximum, and values immediately adjacent to the boundaries of the valid ranges.",
-            "negative": "Tests only use typical or central values, without exploring the limits of the input domains."
+      "code": "CS-04",
+      "title": "Boundary Value Analysis",
+      "category": "Common Sense",
+      "principle": "Test cases should focus on the boundary values of input domains.",
+      "rationale": [
+        "Errors often occur at the boundaries of input ranges (e.g., min, max, just inside/outside).",
+        "It is an efficient technique to find errors with a small number of test cases.",
+        "It helps to verify that the logic for handling limits is correctly implemented."
+      ],
+      "evaluation_criteria": {
+        "positive": "There are tests for minimum, maximum, and values immediately adjacent to the boundaries of the valid ranges.",
+        "negative": "Tests only use typical or central values, without exploring the limits of the input domains."
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void testDiscount() {\n    // Only tests a value within the range\n    assertEquals(10, getDiscount(50));\n}"
         },
-        "examples": {
-            "violation": {
-                "language": "java",
-                "code": "@Test\npublic void testDiscount() {\n    // Only tests a value within the range\n    assertEquals(10, getDiscount(50));\n}"
-            },
-            "correct": {
-                "language": "java",
-                "code": "@Test\npublic void testDiscount_Boundaries() {\n    assertEquals(0, getDiscount(0));   // Min\n    assertEquals(10, getDiscount(1));  // Just above min\n    assertEquals(10, getDiscount(99)); // Just below max\n    assertEquals(20, getDiscount(100)); // Max\n}"
-            }
+        "correct": {
+          "language": "java",
+          "code": "@Test\npublic void testDiscount_Boundaries() {\n    assertEquals(0, getDiscount(0));   // Min\n    assertEquals(10, getDiscount(1));  // Just above min\n    assertEquals(10, getDiscount(99)); // Just below max\n    assertEquals(20, getDiscount(100)); // Max\n}"
         }
+      }
     },
     {
-        "code": "CS-05",
-        "title": "Complete Modularity of Test Cases",
-        "category": "Common Sense",
-        "principle": "Test code should be well-organized, modular, and follow good programming practices.",
-        "rationale": [
-            "Facilitates the maintenance and evolution of the test suite.",
-            "Improves the readability and understanding of the tests.",
-            "Allows for the reuse of setup code, assertions, and helper methods."
-        ],
-        "evaluation_criteria": {
-            "positive": "The code uses helper methods for common tasks, constants for magic values, and follows a clear structure like Arrange-Act-Assert.",
-            "negative": "The test method is long and monolithic, with duplicated code and hardcoded values."
+      "code": "CS-05",
+      "title": "Complete Modularity of Test Cases",
+      "category": "Common Sense",
+      "principle": "Test code should be well-organized, modular, and follow good programming practices.",
+      "rationale": [
+        "Facilitates the maintenance and evolution of the test suite.",
+        "Improves the readability and understanding of the tests.",
+        "Allows for the reuse of setup code, assertions, and helper methods."
+      ],
+      "evaluation_criteria": {
+        "positive": "The code uses helper methods for common tasks, constants for magic values, and follows a clear structure like Arrange-Act-Assert.",
+        "negative": "The test method is long and monolithic, with duplicated code and hardcoded values."
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void testLongMethod() {\n    // 50 lines of setup, action, and assertions mixed together\n}"
         },
-        "examples": {
-            "violation": {
-                "language": "java",
-                "code": "@Test\npublic void testLongMethod() {\n    // 50 lines of setup, action, and assertions mixed together\n}"
-            },
-            "correct": {
-                "language": "java",
-                "code": "@Test\npublic void testWithHelper() {\n    // Arrange\n    User user = createUserHelper(\'test\');\n\n    // Act\n    service.disableUser(user);\n\n    // Assert\n    assertUserIsDisabled(user);\n}"
-            }
+        "correct": {
+          "language": "java",
+          "code": "@Test\npublic void testWithHelper() {\n    // Arrange\n    User user = createUserHelper('test');\n\n    // Act\n    service.disableUser(user);\n\n    // Assert\n    assertUserIsDisabled(user);\n}"
         }
+      }
     },
     {
-        "code": "CS-06",
-        "title": "Detailed Analysis of Size and Complexity",
-        "category": "Common Sense",
-        "principle": "The complexity of the test code should be kept as low as possible.",
-        "rationale": [
-            "Complex tests are difficult to understand and maintain.",
-            "Test code should be simpler than the code it tests.",
-            "High cyclomatic complexity in a test can indicate that it is testing too many things at once."
-        ],
-        "evaluation_criteria": {
-            "positive": "Test methods are short, concise, and have a single logical path.",
-            "negative": "The test method contains loops, complex conditionals, or a high level of nesting."
+      "code": "CS-06",
+      "title": "Detailed Analysis of Size and Complexity",
+      "category": "Common Sense",
+      "principle": "The complexity of the test code should be kept as low as possible.",
+      "rationale": [
+        "Complex tests are difficult to understand and maintain.",
+        "Test code should be simpler than the code it tests.",
+        "High cyclomatic complexity in a test can indicate that it is testing too many things at once."
+      ],
+      "evaluation_criteria": {
+        "positive": "Test methods are short, concise, and have a single logical path.",
+        "negative": "The test method contains loops, complex conditionals, or a high level of nesting."
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void testWithLogic() {\n    if (condition) {\n        for (int i = 0; i < 10; i++) {\n            // ... complex logic\n        }\n    }\n}"
         },
-        "examples": {
-            "violation": {
-                "language": "java",
-                "code": "@Test\npublic void testWithLogic() {\n    if (condition) {\n        for (int i = 0; i < 10; i++) {\n            // ... complex logic\n        }\n    }\n}"
-            },
-            "correct": {
-                "language": "java",
-                "code": "@Test\npublic void testSimpleCase() { /* ... */ }\n\n@Test\npublic void testAnotherSimpleCase() { /* ... */ }"
-            }
+        "correct": {
+          "language": "java",
+          "code": "@Test\npublic void testSimpleCase() { /* ... */ }\n\n@Test\npublic void testAnotherSimpleCase() { /* ... */ }"
         }
+      }
     },
     {
-        "code": "CS-07",
-        "title": "Complex Design for Fault Detection",
-        "category": "Common Sense",
-        "principle": "Tests should be designed to be sensitive to likely failures.",
-        "rationale": [
-            "A good test is one that is likely to fail if the code is incorrect.",
-            "Tests should not be too fragile (failing for irrelevant changes) nor too robust (passing even when the code is wrong).",
-            "This requires understanding the implementation and potential points of failure."
-        ],
-        "evaluation_criteria": {
-            "positive": "Assertions are specific and check the most critical aspects of the behavior. The test setup creates a scenario where a failure is likely to be exposed.",
-            "negative": "The test only performs superficial checks (e.g., not null) without validating the actual state or behavior of the object."
+      "code": "CS-07",
+      "title": "Complex Design for Fault Detection",
+      "category": "Common Sense",
+      "principle": "Tests should be designed to be sensitive to likely failures.",
+      "rationale": [
+        "A good test is one that is likely to fail if the code is incorrect.",
+        "Tests should not be too fragile (failing for irrelevant changes) nor too robust (passing even when the code is wrong).",
+        "This requires understanding the implementation and potential points of failure."
+      ],
+      "evaluation_criteria": {
+        "positive": "Assertions are specific and check the most critical aspects of the behavior. The test setup creates a scenario where a failure is likely to be exposed.",
+        "negative": "The test only performs superficial checks (e.g., not null) without validating the actual state or behavior of the object."
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void testCreateUser_NotNull() {\n    User user = service.createUser('test');\n    assertNotNull(user); // Very weak assertion\n}"
         },
-        "examples": {
-            "violation": {
-                "language": "java",
-                "code": "@Test\npublic void testCreateUser_NotNull() {\n    User user = service.createUser(\'test\');\n    assertNotNull(user); // Very weak assertion\n}"
-            },
-            "correct": {
-                "language": "java",
-                "code": "@Test\npublic void testCreateUser_State() {\n    User user = service.createUser(\'test\');\n    assertEquals(\'test\', user.getName());\n    assertTrue(user.isActive());\n    assertNotNull(user.getId());\n}"
-            }
+        "correct": {
+          "language": "java",
+          "code": "@Test\npublic void testCreateUser_State() {\n    User user = service.createUser('test');\n    assertEquals('test', user.getName());\n    assertTrue(user.isActive());\n    assertNotNull(user.getId());\n}"
         }
+      }
     },
     {
-        "code": "CS-08",
-        "title": "Complete Maintenance of Test Code",
-        "category": "Common Sense",
-        "principle": "Test code should be treated as production code, with the same quality and maintenance standards.",
-        "rationale": [
-            "Outdated or broken tests are useless and generate noise.",
-            "A well-maintained test suite is a valuable asset for the project.",
-            "This includes refactoring, updating, and deleting obsolete tests."
-        ],
-        "evaluation_criteria": {
-            "positive": "The test suite is up-to-date with the production code. There are no ignored or commented-out tests without a clear justification.",
-            "negative": "The project contains tests that no longer compile, are ignored (@Ignore), or test obsolete functionality."
+      "code": "CS-08",
+      "title": "Complete Maintenance of Test Code",
+      "category": "Common Sense",
+      "principle": "Test code should be treated as production code, with the same quality and maintenance standards.",
+      "rationale": [
+        "Outdated or broken tests are useless and generate noise.",
+        "A well-maintained test suite is a valuable asset for the project.",
+        "This includes refactoring, updating, and deleting obsolete tests."
+      ],
+      "evaluation_criteria": {
+        "positive": "The test suite is up-to-date with the production code. There are no ignored or commented-out tests without a clear justification.",
+        "negative": "The project contains tests that no longer compile, are ignored (@Ignore), or test obsolete functionality."
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Ignore('TODO: fix this later')\n@Test\npublic void testObsoleteFeature() { /* ... */ }"
         },
-        "examples": {
-            "violation": {
-                "language": "java",
-                "code": "@Ignore(\'TODO: fix this later\')\n@Test\npublic void testObsoleteFeature() { /* ... */ }"
-            },
-            "correct": {
-                "language": "java",
-                "code": "// Test suite is clean and all tests run successfully."
-            }
+        "correct": {
+          "language": "java",
+          "code": "// Test suite is clean and all tests run successfully."
         }
+      }
     },
     {
-        "code": "CS-09",
-        "title": "Complete Traceability of Test Cases",
-        "category": "Common Sense",
-        "principle": "Test cases should be clearly linked to the requirements or user stories they verify.",
-        "rationale": [
-            "Allows for verifying that all requirements have adequate test coverage.",
-            "Facilitates impact analysis when a requirement changes.",
-            "Helps to understand the purpose and context of a test."
-        ],
-        "evaluation_criteria": {
-            "positive": "Test methods or classes have annotations or comments linking them to a requirement ID (e.g., @Story(\'JIRA-123\'), // US-456).",
-            "negative": "It is not possible to determine which requirement a test is verifying without a deep analysis of the code."
+      "code": "CS-09",
+      "title": "Complete Traceability of Test Cases",
+      "category": "Common Sense",
+      "principle": "Test cases should be clearly linked to the requirements or user stories they verify.",
+      "rationale": [
+        "Allows for verifying that all requirements have adequate test coverage.",
+        "Facilitates impact analysis when a requirement changes.",
+        "Helps to understand the purpose and context of a test."
+      ],
+      "evaluation_criteria": {
+        "positive": "Test methods or classes have annotations or comments linking them to a requirement ID (e.g., @Story('JIRA-123'), // US-456).",
+        "negative": "It is not possible to determine which requirement a test is verifying without a deep analysis of the code."
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void testSomething() { /* ... */ } // What does this test?"
         },
-        "examples": {
-            "violation": {
-                "language": "java",
-                "code": "@Test\npublic void testSomething() { /* ... */ } // What does this test?"
-            },
-            "correct": {
-                "language": "java",
-                "code": "/**\n * Verifies the user login with a valid password.\n * @see US-101\n */\n@Test\npublic void testLogin_ValidPassword() { /* ... */ }"
-            }
+        "correct": {
+          "language": "java",
+          "code": "/**\n * Verifies the user login with a valid password.\n * @see US-101\n */\n@Test\npublic void testLogin_ValidPassword() { /* ... */ }"
         }
+      }
     },
     {
-        "code": "CS-10",
-        "title": "Rigorous Use of Performance and Security Tests",
-        "category": "Common Sense",
-        "principle": "In addition to functional tests, non-functional requirements such as performance and security should be tested.",
-        "rationale": [
-            "A functionally correct system can be unusable if it is too slow or insecure.",
-            "Non-functional issues are often difficult to fix in advanced stages of development.",
-            "Automated non-functional tests ensure that regressions are not introduced."
-        ],
-        "evaluation_criteria": {
-            "positive": "The project has a separate suite for performance tests (e.g., using JMeter, Gatling) or security tests (e.g., using OWASP ZAP, SonarQube).",
-            "negative": "The project only has functional unit or integration tests, ignoring non-functional aspects."
+      "code": "CS-10",
+      "title": "Rigorous Use of Performance and Security Tests",
+      "category": "Common Sense",
+      "principle": "In addition to functional tests, non-functional requirements such as performance and security should be tested.",
+      "rationale": [
+        "A functionally correct system can be unusable if it is too slow or insecure.",
+        "Non-functional issues are often difficult to fix in advanced stages of development.",
+        "Automated non-functional tests ensure that regressions are not introduced."
+      ],
+      "evaluation_criteria": {
+        "positive": "The project has a separate suite for performance tests (e.g., using JMeter, Gatling) or security tests (e.g., using OWASP ZAP, SonarQube).",
+        "negative": "The project only has functional unit or integration tests, ignoring non-functional aspects."
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "// No performance or security tests exist in the project."
         },
-        "examples": {
-            "violation": {
-                "language": "java",
-                "code": "// No performance or security tests exist in the project."
-            },
-            "correct": {
-                "language": "java",
-                "code": "// A separate 'performance-tests' module exists.\n// A CI/CD pipeline step runs security vulnerability scans."
-            }
+        "correct": {
+          "language": "java",
+          "code": "// A separate 'performance-tests' module exists.\n// A CI/CD pipeline step runs security vulnerability scans."
         }
+      }
     },
     {
-        "code": "CS-11",
-        "title": "Regular Review of Test Cases",
-        "category": "Common Sense",
-        "principle": "The test suite should be reviewed periodically to ensure its quality and relevance.",
-        "rationale": [
-            "Identifies and removes redundant, obsolete, or ineffective tests.",
-            "Ensures that the test suite evolves along with the production code.",
-            "It is an opportunity to share knowledge and improve testing practices within the team."
-        ],
-        "evaluation_criteria": {
-            "positive": "Test code is part of the regular code review process. The team has sessions to review the health of the test suite.",
-            "negative": "Tests are written and never reviewed again, accumulating technical debt."
+      "code": "CS-11",
+      "title": "Regular Review of Test Cases",
+      "category": "Common Sense",
+      "principle": "The test suite should be reviewed periodically to ensure its quality and relevance.",
+      "rationale": [
+        "Identifies and removes redundant, obsolete, or ineffective tests.",
+        "Ensures that the test suite evolves along with the production code.",
+        "It is an opportunity to share knowledge and improve testing practices within the team."
+      ],
+      "evaluation_criteria": {
+        "positive": "Test code is part of the regular code review process. The team has sessions to review the health of the test suite.",
+        "negative": "Tests are written and never reviewed again, accumulating technical debt."
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "// Test written 5 years ago, for a feature that no longer exists."
         },
-        "examples": {
-            "violation": {
-                "language": "java",
-                "code": "// Test written 5 years ago, for a feature that no longer exists."
-            },
-            "correct": {
-                "language": "java",
-                "code": "// Test code is included in pull requests and reviewed by peers."
-            }
+        "correct": {
+          "language": "java",
+          "code": "// Test code is included in pull requests and reviewed by peers."
         }
+      }
     },
     {
-        "code": "CS-12",
-        "title": "Clear Understanding of Test Cases",
-        "category": "Common Sense",
-        "principle": "Test names should be descriptive and clearly communicate their purpose.",
-        "rationale": [
-            "A good test name allows understanding what is being tested without having to read the code.",
-            "When a test fails, the name should give a clear idea of what functionality is broken.",
-            "It follows the principle of self-documenting code."
-        ],
-        "evaluation_criteria": {
-            "positive": "Test names follow a clear and consistent convention, such as `methodName_scenario_expectedBehavior`.",
-            "negative": "Test names are generic (e.g., `test1`, `testProcess`) and do not describe the specific scenario."
+      "code": "CS-12",
+      "title": "Clear Understanding of Test Cases",
+      "category": "Common Sense",
+      "principle": "Test names should be descriptive and clearly communicate their purpose.",
+      "rationale": [
+        "A good test name allows understanding what is being tested without having to read the code.",
+        "When a test fails, the name should give a clear idea of what functionality is broken.",
+        "It follows the principle of self-documenting code."
+      ],
+      "evaluation_criteria": {
+        "positive": "Test names follow a clear and consistent convention, such as `methodName_scenario_expectedBehavior`.",
+        "negative": "Test names are generic (e.g., `test1`, `testProcess`) and do not describe the specific scenario."
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void testUser() { /* ... */ }"
         },
-        "examples": {
-            "violation": {
-                "language": "java",
-                "code": "@Test\npublic void testUser() { /* ... */ }"
-            },
-            "correct": {
-                "language": "java",
-                "code": "@Test\npublic void createUser_withValidData_returnsUserWithId() { /* ... */ }"
-            }
+        "correct": {
+          "language": "java",
+          "code": "@Test\npublic void createUser_withValidData_returnsUserWithId() { /* ... */ }"
         }
+      }
     },
     {
-        "code": "CS-13",
-        "title": "Structured Coverage of the Testing Process",
-        "category": "Common Sense",
-        "principle": "The testing process should be well-defined, structured, and cover all stages of development.",
-        "rationale": [
-            "Ensures that testing is not an afterthought, but an integral part of the development process.",
-            "Defines clear responsibilities for different types of tests (unit, integration, E2E).",
-            "Follows a testing pyramid strategy, with a solid base of unit tests."
-        ],
-        "evaluation_criteria": {
-            "positive": "The project has a clear testing strategy, with a good balance of unit, integration, and end-to-end tests.",
-            "negative": "The project relies almost exclusively on manual tests or slow and fragile E2E tests."
+      "code": "CS-13",
+      "title": "Structured Coverage of the Testing Process",
+      "category": "Common Sense",
+      "principle": "The testing process should be well-defined, structured, and cover all stages of development.",
+      "rationale": [
+        "Ensures that testing is not an afterthought, but an integral part of the development process.",
+        "Defines clear responsibilities for different types of tests (unit, integration, E2E).",
+        "Follows a testing pyramid strategy, with a solid base of unit tests."
+      ],
+      "evaluation_criteria": {
+        "positive": "The project has a clear testing strategy, with a good balance of unit, integration, and end-to-end tests.",
+        "negative": "The project relies almost exclusively on manual tests or slow and fragile E2E tests."
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "// Project with 90% of tests being E2E UI tests."
         },
-        "examples": {
-            "violation": {
-                "language": "java",
-                "code": "// Project with 90% of tests being E2E UI tests."
-            },
-            "correct": {
-                "language": "java",
-                "code": "// Project with a high number of unit tests, a reasonable number of integration tests, and a few E2E tests."
-            }
+        "correct": {
+          "language": "java",
+          "code": "// Project with a high number of unit tests, a reasonable number of integration tests, and a few E2E tests."
         }
+      }
     },
     {
-        "code": "CS-14",
-        "title": "Complete Guarantee of Test Code Quality",
-        "category": "Common Sense",
-        "principle": "Static analysis tools and linters should be used to ensure the quality of the test code.",
-        "rationale": [
-            "Automatically detects potential problems, code smells, and style violations.",
-            "Helps to maintain a consistent and high-quality codebase.",
-            "Frees up reviewers to focus on the logic and design of the tests."
-        ],
-        "evaluation_criteria": {
-            "positive": "The project is configured with tools like SonarQube, Checkstyle, or PMD, and the rules are applied to both production and test code.",
-            "negative": "There is no automated quality control for the test code, allowing technical debt to accumulate."
+      "code": "CS-14",
+      "title": "Complete Guarantee of Test Code Quality",
+      "category": "Common Sense",
+      "principle": "Static analysis tools and linters should be used to ensure the quality of the test code.",
+      "rationale": [
+        "Automatically detects potential problems, code smells, and style violations.",
+        "Helps to maintain a consistent and high-quality codebase.",
+        "Frees up reviewers to focus on the logic and design of the tests."
+      ],
+      "evaluation_criteria": {
+        "positive": "The project is configured with tools like SonarQube, Checkstyle, or PMD, and the rules are applied to both production and test code.",
+        "negative": "There is no automated quality control for the test code, allowing technical debt to accumulate."
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "// No static analysis tool is configured in the CI/CD pipeline."
         },
-        "examples": {
-            "violation": {
-                "language": "java",
-                "code": "// No static analysis tool is configured in the CI/CD pipeline."
-            },
-            "correct": {
-                "language": "java",
-                "code": "// The build fails if the test code does not meet the defined quality standards."
-            }
+        "correct": {
+          "language": "java",
+          "code": "// The build fails if the test code does not meet the defined quality standards."
         }
+      }
     },
     {
-        "code": "LS-01",
-        "title": "Adequate Use of Code Coverage",
-        "category": "Literature Supported",
-        "principle": "Code coverage should be used as a guide to identify untested parts of the code, not as a quality goal in itself.",
-        "rationale": [
-            "High coverage does not necessarily mean high-quality tests.",
-            "100% coverage can be impractical and lead to low-value tests.",
-            "The focus should be on testing critical and complex parts of the code."
-        ],
-        "evaluation_criteria": {
-            "positive": "The team uses coverage reports to find gaps in testing, but decisions are based on risk and code complexity.",
-            "negative": "The team has a strict goal of 100% coverage, which leads to writing tests just to increase the number, without considering their value."
+      "code": "LS-01",
+      "title": "Adequate Use of Code Coverage",
+      "category": "Literature Supported",
+      "principle": "Code coverage should be used as a guide to identify untested parts of the code, not as a quality goal in itself.",
+      "rationale": [
+        "High coverage does not necessarily mean high-quality tests.",
+        "100% coverage can be impractical and lead to low-value tests.",
+        "The focus should be on testing critical and complex parts of the code."
+      ],
+      "evaluation_criteria": {
+        "positive": "The team uses coverage reports to find gaps in testing, but decisions are based on risk and code complexity.",
+        "negative": "The team has a strict goal of 100% coverage, which leads to writing tests just to increase the number, without considering their value."
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void testGettersAndSetters() {\n    // Test written only to increase coverage\n    User u = new User();\n    u.setName('test');\n    assertEquals('test', u.getName());\n}"
         },
-        "examples": {
-            "violation": {
-                "language": "java",
-                "code": "@Test\npublic void testGettersAndSetters() {\n    // Test written only to increase coverage\n    User u = new User();\n    u.setName(\'test\');\n    assertEquals(\'test\', u.getName());\n}"
-            },
-            "correct": {
-                "language": "java",
-                "code": "// Coverage is monitored, but the focus is on testing business logic and complex algorithms."
-            }
+        "correct": {
+          "language": "java",
+          "code": "// Coverage is monitored, but the focus is on testing business logic and complex algorithms."
         }
+      }
     },
     {
-        "code": "LS-02",
-        "title": "Necessary Use of Missing Tests",
-        "category": "Literature Supported",
-        "principle": "It is important to identify not only which tests are present, but also which tests are missing.",
-        "rationale": [
-            "Missing tests for critical scenarios represent a significant risk.",
-            "Techniques like mutation testing can help to identify where existing tests are insufficient.",
-            "This requires a deep understanding of the requirements and the system."
-        ],
-        "evaluation_criteria": {
-            "positive": "The team uses mutation testing (e.g., with Pitest) to assess the quality of the test suite and identify weaknesses.",
-            "negative": "The team only relies on code coverage and does not question whether the existing tests are sufficient to detect real faults."
+      "code": "LS-02",
+      "title": "Necessary Use of Missing Tests",
+      "category": "Literature Supported",
+      "principle": "It is important to identify not only which tests are present, but also which tests are missing.",
+      "rationale": [
+        "Missing tests for critical scenarios represent a significant risk.",
+        "Techniques like mutation testing can help to identify where existing tests are insufficient.",
+        "This requires a deep understanding of the requirements and the system."
+      ],
+      "evaluation_criteria": {
+        "positive": "The team uses mutation testing (e.g., with Pitest) to assess the quality of the test suite and identify weaknesses.",
+        "negative": "The team only relies on code coverage and does not question whether the existing tests are sufficient to detect real faults."
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "// A test has 100% coverage, but does not fail when a critical line is removed (the mutation survives)."
         },
-        "examples": {
-            "violation": {
-                "language": "java",
-                "code": "// A test has 100% coverage, but does not fail when a critical line is removed (the mutation survives)."
-            },
-            "correct": {
-                "language": "java",
-                "code": "// The CI/CD pipeline includes a mutation testing step, and the build fails if the mutation score is too low."
-            }
+        "correct": {
+          "language": "java",
+          "code": "// The CI/CD pipeline includes a mutation testing step, and the build fails if the mutation score is too low."
         }
+      }
     },
     {
-        "code": "LS-03",
-        "title": "Efficient Use of Code Coverage",
-        "category": "Literature Supported",
-        "principle": "Test selection and prioritization techniques should be used to run the most relevant tests more frequently.",
-        "rationale": [
-            "Running the entire test suite can be slow and expensive.",
-            "Prioritizing tests that cover recently modified code can provide faster feedback.",
-            "Test impact analysis helps to select only the tests affected by a change."
-        ],
-        "evaluation_criteria": {
-            "positive": "The CI/CD pipeline uses strategies to run a subset of fast tests on each commit, and the full suite nightly or before a release.",
-            "negative": "Every small change triggers the execution of the entire test suite, slowing down the development cycle."
+      "code": "LS-03",
+      "title": "Efficient Use of Code Coverage",
+      "category": "Literature Supported",
+      "principle": "Test selection and prioritization techniques should be used to run the most relevant tests more frequently.",
+      "rationale": [
+        "Running the entire test suite can be slow and expensive.",
+        "Prioritizing tests that cover recently modified code can provide faster feedback.",
+        "Test impact analysis helps to select only the tests affected by a change."
+      ],
+      "evaluation_criteria": {
+        "positive": "The CI/CD pipeline uses strategies to run a subset of fast tests on each commit, and the full suite nightly or before a release.",
+        "negative": "Every small change triggers the execution of the entire test suite, slowing down the development cycle."
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "// CI/CD pipeline takes 2 hours to run for any change."
         },
-        "examples": {
-            "violation": {
-                "language": "java",
-                "code": "// CI/CD pipeline takes 2 hours to run for any change."
-            },
-            "correct": {
-                "language": "java",
-                "code": "// The pipeline runs unit tests in < 1 minute, providing quick feedback to the developer."
-            }
+        "correct": {
+          "language": "java",
+          "code": "// The pipeline runs unit tests in < 1 minute, providing quick feedback to the developer."
         }
+      }
     },
     {
-        "code": "LS-04",
-        "title": "Small Footprint of Test Code Generation",
-        "category": "Literature Supported",
-        "principle": "Automatically generated tests should be concise, readable, and easy to maintain.",
-        "rationale": [
-            "Tools that generate large amounts of boilerplate or unreadable code create a maintenance problem.",
-            "The generated tests should be as good as manually written tests.",
-            "It is important to configure generation tools to produce clean code."
-        ],
-        "evaluation_criteria": {
-            "positive": "If test generation tools are used, they are configured to produce clean, readable code that follows project conventions.",
-            "negative": "The project is full of automatically generated tests that no one understands or dares to modify."
+      "code": "LS-04",
+      "title": "Small Footprint of Test Code Generation",
+      "category": "Literature Supported",
+      "principle": "Automatically generated tests should be concise, readable, and easy to maintain.",
+      "rationale": [
+        "Tools that generate large amounts of boilerplate or unreadable code create a maintenance problem.",
+        "The generated tests should be as good as manually written tests.",
+        "It is important to configure generation tools to produce clean code."
+      ],
+      "evaluation_criteria": {
+        "positive": "If test generation tools are used, they are configured to produce clean, readable code that follows project conventions.",
+        "negative": "The project is full of automatically generated tests that no one understands or dares to modify."
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "// A test with 200 lines of code generated by a tool, with cryptic variable names."
         },
-        "examples": {
-            "violation": {
-                "language": "java",
-                "code": "// A test with 200 lines of code generated by a tool, with cryptic variable names."
-            },
-            "correct": {
-                "language": "java",
-                "code": "// A test generated by a tool, but it is compact and follows the Arrange-Act-Assert pattern."
-            }
+        "correct": {
+          "language": "java",
+          "code": "// A test generated by a tool, but it is compact and follows the Arrange-Act-Assert pattern."
         }
+      }
     },
     {
-        "code": "LS-05",
-        "title": "Complete Prioritization of Test Case Design",
-        "category": "Literature Supported",
-        "principle": "The design of test cases is a creative and critical activity that should be prioritized.",
-        "rationale": [
-            "Writing good tests requires more than just writing code; it requires thinking like a tester.",
-            "Time should be invested in designing test scenarios before starting to implement them.",
-            "Techniques like Test-Driven Development (TDD) and Behavior-Driven Development (BDD) formalize this practice."
-        ],
-        "evaluation_criteria": {
-            "positive": "The team follows TDD or BDD, writing the test (or specification) before the production code.",
-            "negative": "Tests are written after the fact, only to meet a coverage goal, without a clear design."
+      "code": "LS-05",
+      "title": "Complete Prioritization of Test Case Design",
+      "category": "Literature Supported",
+      "principle": "The design of test cases is a creative and critical activity that should be prioritized.",
+      "rationale": [
+        "Writing good tests requires more than just writing code; it requires thinking like a tester.",
+        "Time should be invested in designing test scenarios before starting to implement them.",
+        "Techniques like Test-Driven Development (TDD) and Behavior-Driven Development (BDD) formalize this practice."
+      ],
+      "evaluation_criteria": {
+        "positive": "The team follows TDD or BDD, writing the test (or specification) before the production code.",
+        "negative": "Tests are written after the fact, only to meet a coverage goal, without a clear design."
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "// Code is written first, and then some tests are added to increase coverage."
         },
-        "examples": {
-            "violation": {
-                "language": "java",
-                "code": "// Code is written first, and then some tests are added to increase coverage."
-            },
-            "correct": {
-                "language": "java",
-                "code": "// A failing test is written first, then the production code is written to make it pass, and finally the code is refactored."
-            }
+        "correct": {
+          "language": "java",
+          "code": "// A failing test is written first, then the production code is written to make it pass, and finally the code is refactored."
         }
+      }
     },
     {
-        "code": "LS-06",
-        "title": "Responsible Addition of Test Code Maintenance",
-        "category": "Literature Supported",
-        "principle": "The cost of maintaining the test suite should be considered when adding new tests.",
-        "rationale": [
-            "Every line of test code has a maintenance cost.",
-            "It is important to balance the value a test provides with the effort required to maintain it.",
-            "Tests that are too coupled to the implementation are fragile and expensive to maintain."
-        ],
-        "evaluation_criteria": {
-            "positive": "Tests are written against the public API of the components, not their internal implementation details. The team discusses the value versus the cost of new tests.",
-            "negative": "The team adds tests without considering the long-term maintenance cost, resulting in a fragile and expensive test suite."
+      "code": "LS-06",
+      "title": "Responsible Addition of Test Code Maintenance",
+      "category": "Literature Supported",
+      "principle": "The cost of maintaining the test suite should be considered when adding new tests.",
+      "rationale": [
+        "Every line of test code has a maintenance cost.",
+        "It is important to balance the value a test provides with the effort required to maintain it.",
+        "Tests that are too coupled to the implementation are fragile and expensive to maintain."
+      ],
+      "evaluation_criteria": {
+        "positive": "Tests are written against the public API of the components, not their internal implementation details. The team discusses the value versus the cost of new tests.",
+        "negative": "The team adds tests without considering the long-term maintenance cost, resulting in a fragile and expensive test suite."
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void testPrivateMethod() {\n    // Using reflection to test a private method, creating a very fragile test.\n}"
         },
-        "examples": {
-            "violation": {
-                "language": "java",
-                "code": "@Test\npublic void testPrivateMethod() {\n    // Using reflection to test a private method, creating a very fragile test.\n}"
-            },
-            "correct": {
-                "language": "java",
-                "code": "@Test\npublic void testPublicBehavior() {\n    // The test validates the result of a public method, regardless of the internal implementation.\n}"
-            }
+        "correct": {
+          "language": "java",
+          "code": "@Test\npublic void testPublicBehavior() {\n    // The test validates the result of a public method, regardless of the internal implementation.\n}"
         }
+      }
     },
     {
-        "code": "LS-07",
-        "title": "Adequate Use of Test Assertions",
-        "category": "Literature Supported",
-        "principle": "Assertions should be specific, meaningful, and provide clear error messages.",
-        "rationale": [
-            "A generic assertion (e.g., `assertTrue(true)`) provides no value.",
-            "A good assertion message explains what was expected and what was actually obtained.",
-            "Using specific assertion libraries (e.g., AssertJ, Hamcrest) can improve the readability of the tests."
-        ],
-        "evaluation_criteria": {
-            "positive": "The test uses specific assertions (e.g., `assertEquals`, `assertThat`) and includes descriptive messages.",
-            "negative": "The test uses generic assertions or does not include assertions at all, or the error messages are not helpful."
+      "code": "LS-07",
+      "title": "Adequate Use of Test Assertions",
+      "category": "Literature Supported",
+      "principle": "Assertions should be specific, meaningful, and provide clear error messages.",
+      "rationale": [
+        "A generic assertion (e.g., `assertTrue(true)`) provides no value.",
+        "A good assertion message explains what was expected and what was actually obtained.",
+        "Using specific assertion libraries (e.g., AssertJ, Hamcrest) can improve the readability of the tests."
+      ],
+      "evaluation_criteria": {
+        "positive": "The test uses specific assertions (e.g., `assertEquals`, `assertThat`) and includes descriptive messages.",
+        "negative": "The test uses generic assertions or does not include assertions at all, or the error messages are not helpful."
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "assertTrue(result == 10); // Generic assertion"
         },
-        "examples": {
-            "violation": {
-                "language": "java",
-                "code": "assertTrue(result == 10); // Generic assertion"
-            },
-            "correct": {
-                "language": "java",
-                "code": "assertEquals(\'The discount should be 10 for a value of 50\', 10, result);"
-            }
+        "correct": {
+          "language": "java",
+          "code": "assertEquals('The discount should be 10 for a value of 50', 10, result);"
         }
+      }
     },
     {
-        "code": "LS-08",
-        "title": "Responsible Addition of Debugging Comments",
-        "category": "Literature Supported",
-        "principle": "Test code should be clear enough not to need comments. If comments are necessary, they should explain *why*, not *what*.",
-        "rationale": [
-            "Comments can become outdated and be misleading.",
-            "Good code should be self-documenting.",
-            "Comments are often a sign that the code needs to be refactored to be clearer."
-        ],
-        "evaluation_criteria": {
-            "positive": "The code is clean and readable. Comments are used sparingly to explain complex business logic or the reason for a particular implementation.",
-            "negative": "The code is full of commented-out code, obvious comments (e.g., `// increment i`), or comments that are out of sync with the code."
+      "code": "LS-08",
+      "title": "Responsible Addition of Debugging Comments",
+      "category": "Literature Supported",
+      "principle": "Test code should be clear enough not to need comments. If comments are necessary, they should explain *why*, not *what*.",
+      "rationale": [
+        "Comments can become outdated and be misleading.",
+        "Good code should be self-documenting.",
+        "Comments are often a sign that the code needs to be refactored to be clearer."
+      ],
+      "evaluation_criteria": {
+        "positive": "The code is clean and readable. Comments are used sparingly to explain complex business logic or the reason for a particular implementation.",
+        "negative": "The code is full of commented-out code, obvious comments (e.g., `// increment i`), or comments that are out of sync with the code."
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "// Create a user\nUser user = new User();"
         },
-        "examples": {
-            "violation": {
-                "language": "java",
-                "code": "// Create a user\nUser user = new User();"
-            },
-            "correct": {
-                "language": "java",
-                "code": "// We need to create a user with an expired password to test the password renewal flow.\nUser user = createExpiredPasswordUser();"
-            }
+        "correct": {
+          "language": "java",
+          "code": "// We need to create a user with an expired password to test the password renewal flow.\nUser user = createExpiredPasswordUser();"
         }
+      }
     },
     {
-        "code": "LS-09",
-        "title": "Deterministic Design of Test Results",
-        "category": "Literature Supported",
-        "principle": "Tests should be deterministic: they should always produce the same result if the code has not changed.",
-        "rationale": [
-            "Flaky tests (which fail intermittently) erode confidence in the test suite.",
-            "Non-determinism can be caused by factors such as concurrency, reliance on random data, or external dependencies.",
-            "It is crucial to identify and fix the root cause of flaky tests."
-        ],
-        "evaluation_criteria": {
-            "positive": "Tests avoid dependencies on time (`System.currentTimeMillis()`), random data, or uncontrolled external systems. Concurrency is handled with appropriate synchronization mechanisms.",
-            "negative": "The test suite has tests that fail from time to time for no apparent reason."
+      "code": "LS-09",
+      "title": "Deterministic Design of Test Results",
+      "category": "Literature Supported",
+      "principle": "Tests should be deterministic: they should always produce the same result if the code has not changed.",
+      "rationale": [
+        "Flaky tests (which fail intermittently) erode confidence in the test suite.",
+        "Non-determinism can be caused by factors such as concurrency, reliance on random data, or external dependencies.",
+        "It is crucial to identify and fix the root cause of flaky tests."
+      ],
+      "evaluation_criteria": {
+        "positive": "Tests avoid dependencies on time (`System.currentTimeMillis()`), random data, or uncontrolled external systems. Concurrency is handled with appropriate synchronization mechanisms.",
+        "negative": "The test suite has tests that fail from time to time for no apparent reason."
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void testWithRandom() {\n    int random = new Random().nextInt();\n    // The result depends on random data\n}"
         },
-        "examples": {
-            "violation": {
-                "language": "java",
-                "code": "@Test\npublic void testWithRandom() {\n    int random = new Random().nextInt();\n    // The result depends on random data\n}"
-            },
-            "correct": {
-                "language": "java",
-                "code": "@Test\npublic void testWithFixedSeed() {\n    int pseudoRandom = new Random(12345L).nextInt();\n    // The result is reproducible\n}"
-            }
+        "correct": {
+          "language": "java",
+          "code": "@Test\npublic void testWithFixedSeed() {\n    int pseudoRandom = new Random(12345L).nextInt();\n    // The result is reproducible\n}"
         }
+      }
     },
     {
-        "code": "LS-10",
-        "title": "Complete Avoidance of Test Side Effects",
-        "category": "Literature Supported",
-        "principle": "Tests should not have side effects on the environment that could affect other tests.",
-        "rationale": [
-            "Side effects are a major cause of test dependency and flakiness.",
-            "Each test should run in an isolated environment.",
-            "This includes cleaning up the database, deleting created files, and resetting mocks."
-        ],
-        "evaluation_criteria": {
-            "positive": "Tests use mechanisms like `@After` or `@AfterEach` to restore the state of the system to how it was before the test ran.",
-            "negative": "A test leaves data in the database or files on the disk that cause other tests to fail."
+      "code": "LS-10",
+      "title": "Complete Avoidance of Test Side Effects",
+      "category": "Literature Supported",
+      "principle": "Tests should not have side effects on the environment that could affect other tests.",
+      "rationale": [
+        "Side effects are a major cause of test dependency and flakiness.",
+        "Each test should run in an isolated environment.",
+        "This includes cleaning up the database, deleting created files, and resetting mocks."
+      ],
+      "evaluation_criteria": {
+        "positive": "Tests use mechanisms like `@After` or `@AfterEach` to restore the state of the system to how it was before the test ran.",
+        "negative": "A test leaves data in the database or files on the disk that cause other tests to fail."
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void testCreatesFile() {\n    // Creates a file but never deletes it\n}"
         },
-        "examples": {
-            "violation": {
-                "language": "java",
-                "code": "@Test\npublic void testCreatesFile() {\n    // Creates a file but never deletes it\n}"
-            },
-            "correct": {
-                "language": "java",
-                "code": "@After\npublic void cleanup() {\n    // Delete files, rollback database transactions, etc.\n}"
-            }
+        "correct": {
+          "language": "java",
+          "code": "@After\npublic void cleanup() {\n    // Delete files, rollback database transactions, etc.\n}"
         }
+      }
     },
     {
-        "code": "LS-11",
-        "title": "Adequate Use of Labels and Categories",
-        "category": "Literature Supported",
-        "principle": "Tests should be organized using labels or categories to allow for selective execution.",
-        "rationale": [
-            "Allows for creating different test suites (e.g., `fast`, `slow`, `smoke-test`).",
-            "Facilitates running only the tests relevant to a particular context.",
-            "Improves the organization and structure of the test suite."
-        ],
-        "evaluation_criteria": {
-            "positive": "The project uses annotations like `@Tag` (JUnit 5) or `@Category` (JUnit 4) to classify tests.",
-            "negative": "All tests are in the same bucket, and it is not possible to run a quick subset of critical tests."
+      "code": "LS-11",
+      "title": "Adequate Use of Labels and Categories",
+      "category": "Literature Supported",
+      "principle": "Tests should be organized using labels or categories to allow for selective execution.",
+      "rationale": [
+        "Allows for creating different test suites (e.g., `fast`, `slow`, `smoke-test`).",
+        "Facilitates running only the tests relevant to a particular context.",
+        "Improves the organization and structure of the test suite."
+      ],
+      "evaluation_criteria": {
+        "positive": "The project uses annotations like `@Tag` (JUnit 5) or `@Category` (JUnit 4) to classify tests.",
+        "negative": "All tests are in the same bucket, and it is not possible to run a quick subset of critical tests."
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "// No categorization of tests."
         },
-        "examples": {
-            "violation": {
-                "language": "java",
-                "code": "// No categorization of tests."
-            },
-            "correct": {
-                "language": "java",
-                "code": "@Tag(\'fast\')\n@Test\npublic void unitTest() { /* ... */ }\n\n@Tag(\'slow\')\n@Test\npublic void integrationTest() { /* ... */ }"
-            }
+        "correct": {
+          "language": "java",
+          "code": "@Tag('fast')\n@Test\npublic void unitTest() { /* ... */ }\n\n@Tag('slow')\n@Test\npublic void integrationTest() { /* ... */ }"
         }
+      }
     }
   ]
 }
