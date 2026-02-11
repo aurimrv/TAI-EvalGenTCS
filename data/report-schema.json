@@ -1,0 +1,128 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Test Class Evaluation Report",
+  "type": "object",
+  "required": ["test_class_name", "test_methods", "practices_report", "overall_compliance_score"],
+  "properties": {
+    "test_class_name": {
+      "type": "string",
+      "description": "Name of the test class being evaluated"
+    },
+    "test_methods": {
+      "type": "array",
+      "description": "List of test methods in the class",
+      "items": {
+        "type": "object",
+        "required": ["test_method_name", "practices_evaluation", "method_compliance_score", "suggested_code"],
+        "properties": {
+          "test_method_name": {
+            "type": "string",
+            "description": "Name of the test method"
+          },
+          "practices_evaluation": {
+            "type": "array",
+            "description": "Evaluation of all 25 best practices for this method",
+            "minItems": 25,
+            "maxItems": 25,
+            "items": {
+              "type": "object",
+              "required": ["practice_code", "practice_title", "status", "justification"],
+              "properties": {
+                "practice_code": {
+                  "type": "string",
+                  "pattern": "^(CS|LS)-\\d{2}$",
+                  "description": "Best practice identifier (e.g., CS-01, LS-01)"
+                },
+                "practice_title": {
+                  "type": "string",
+                  "description": "Title of the best practice"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": ["✔️", "❌", "⚪"],
+                  "description": "Compliance status: ✔️ (Met), ❌ (Not Met), ⚪ (Not Applicable)"
+                },
+                "justification": {
+                  "type": "string",
+                  "description": "Explanation of why this status was assigned"
+                },
+                "original_code": {
+                  "type": ["string", "null"],
+                  "description": "Original code snippet (required only when status is ❌)"
+                },
+                "improved_code": {
+                  "type": ["string", "null"],
+                  "description": "Improved code snippet (required only when status is ❌)"
+                }
+              }
+            }
+          },
+          "method_compliance_score": {
+            "type": "string",
+            "pattern": "^\\d{1,3}%$",
+            "description": "Compliance score for this method calculated as (✔️ practices / 25) * 100"
+          },
+          "suggested_code": {
+            "type": "string",
+            "description": "Fully formatted, improved version of the entire test method implementing all applicable best practices"
+          }
+        }
+      }
+    },
+    "practices_report": {
+      "type": "array",
+      "description": "Summary report of compliance for each practice across all methods",
+      "minItems": 25,
+      "maxItems": 25,
+      "items": {
+        "type": "object",
+        "required": ["practice_code", "practice_title", "description", "compliant_methods", "non_compliant_methods", "not_applicable_methods", "total_methods", "compliance_score"],
+        "properties": {
+          "practice_code": {
+            "type": "string",
+            "pattern": "^(CS|LS)-\\d{2}$",
+            "description": "Best practice identifier"
+          },
+          "practice_title": {
+            "type": "string",
+            "description": "Title of the best practice"
+          },
+          "description": {
+            "type": "string",
+            "description": "Brief explanation of what this practice measures"
+          },
+          "compliant_methods": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of methods that met this practice (✔️)"
+          },
+          "non_compliant_methods": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of methods that did not meet this practice (❌)"
+          },
+          "not_applicable_methods": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of methods where this practice was not applicable (⚪)"
+          },
+          "total_methods": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Total number of methods evaluated"
+          },
+          "compliance_score": {
+            "type": "string",
+            "pattern": "^(\\d{1,3}%|N/A)$",
+            "description": "Percentage of compliant methods: (compliant_methods / (total_methods - not_applicable_methods)) * 100, or N/A if all are not applicable"
+          }
+        }
+      }
+    },
+    "overall_compliance_score": {
+      "type": "string",
+      "pattern": "^\\d{1,3}%$",
+      "description": "Overall compliance score across all methods and practices"
+    }
+  }
+}

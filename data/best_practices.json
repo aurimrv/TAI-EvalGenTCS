@@ -1,0 +1,658 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2025-02-11",
+  "source": "PhD Thesis: Towards a strategy and tool support for test generation based on good software testing practices",
+  "author": "Camilo Hernán Villota Ibarra",
+  "practices": [
+    {
+      "code": "CS-01",
+      "title": "Especificação Atômica de Casos de Teste",
+      "title_en": "Atomic Specification of Test Cases",
+      "category": "Common Sense",
+      "principle": "Cada teste deve focar em um único requisito ou comportamento.",
+      "rationale": [
+        "Facilita a identificação precisa da causa raiz de uma falha",
+        "Evita a ocorrência de falsos positivos ou negativos",
+        "Melhora a manutenibilidade e a legibilidade do conjunto de testes"
+      ],
+      "evaluation_criteria": {
+        "positive": "O escopo do método de teste está claramente limitado a uma única funcionalidade ou cenário",
+        "negative": "O método de teste contém múltiplos 'Arrange-Act-Assert' para diferentes funcionalidades, ou testa criação, atualização e exclusão em uma única execução"
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void testUserOperations() {\n    // Testa criação, atualização E exclusão no mesmo teste\n    createUser();\n    updateUser();\n    deleteUser();\n}"
+        },
+        "correct": {
+          "language": "java",
+          "code": "@Test\npublic void testCreateUser() { /* ... */ }\n\n@Test\npublic void testUpdateUser() { /* ... */ }\n\n@Test\npublic void testDeleteUser() { /* ... */ }"
+        }
+      }
+    },
+    {
+      "code": "CS-02",
+      "title": "Independência Completa de Casos de Teste",
+      "title_en": "Complete Independence of Test Cases",
+      "category": "Common Sense",
+      "principle": "Testes não devem depender da execução de outros testes.",
+      "rationale": [
+        "Permite execução em qualquer ordem",
+        "Facilita paralelização",
+        "Reduz efeitos colaterais entre testes"
+      ],
+      "evaluation_criteria": {
+        "positive": "O teste possui seu próprio setup e não depende de estado compartilhado de outros testes",
+        "negative": "O teste depende de variáveis globais, estado de banco de dados ou execução prévia de outros testes"
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void test1_createUser() {\n    user = new User(\"John\");\n}\n\n@Test\npublic void test2_updateUser() {\n    user.setName(\"Jane\"); // Depende de test1\n}"
+        },
+        "correct": {
+          "language": "java",
+          "code": "@Test\npublic void testUpdateUser() {\n    User user = new User(\"John\"); // Setup próprio\n    user.setName(\"Jane\");\n    assertEquals(\"Jane\", user.getName());\n}"
+        }
+      }
+    },
+    {
+      "code": "CS-03",
+      "title": "Cobertura de Fluxos Normais e Excepcionais",
+      "title_en": "Coverage of Normal and Exceptional Flows",
+      "category": "Common Sense",
+      "principle": "Testar tanto cenários normais quanto casos extremos e exceções.",
+      "rationale": [
+        "Garante robustez do sistema",
+        "Detecta edge cases",
+        "Valida tratamento de erros"
+      ],
+      "evaluation_criteria": {
+        "positive": "Existem testes separados para fluxos normais e excepcionais (exceções, valores nulos, limites)",
+        "negative": "Apenas fluxos normais são testados, sem validação de tratamento de erros"
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void testDivision() {\n    assertEquals(2.0, calculator.divide(10, 5));\n    // Falta teste para divisão por zero\n}"
+        },
+        "correct": {
+          "language": "java",
+          "code": "@Test\npublic void testDivision_normalCase() {\n    assertEquals(2.0, calculator.divide(10, 5));\n}\n\n@Test(expected = ArithmeticException.class)\npublic void testDivision_divideByZero() {\n    calculator.divide(10, 0);\n}"
+        }
+      }
+    },
+    {
+      "code": "CS-04",
+      "title": "Análise de Valores Limite",
+      "title_en": "Boundary Values Analysis",
+      "category": "Common Sense",
+      "principle": "Validar entradas nos limites mínimo, máximo e logo fora deles.",
+      "rationale": [
+        "Erros frequentemente ocorrem nos limites",
+        "Detecta off-by-one errors",
+        "Valida condições de contorno"
+      ],
+      "evaluation_criteria": {
+        "positive": "Testes incluem valores nos limites (mínimo, máximo) e valores fora dos limites",
+        "negative": "Testes usam apenas valores médios, sem explorar limites"
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void testAgeValidation() {\n    assertTrue(isValidAge(25)); // Apenas valor médio\n}"
+        },
+        "correct": {
+          "language": "java",
+          "code": "@Test\npublic void testAgeValidation() {\n    assertTrue(isValidAge(0));    // Mínimo\n    assertTrue(isValidAge(120));  // Máximo\n    assertFalse(isValidAge(-1));  // Abaixo do mínimo\n    assertFalse(isValidAge(121)); // Acima do máximo\n}"
+        }
+      }
+    },
+    {
+      "code": "CS-05",
+      "title": "Modularidade Completa de Casos de Teste",
+      "title_en": "Complete Modularity of Test Cases",
+      "category": "Common Sense",
+      "principle": "Testes devem ser auto-contidos e reutilizáveis.",
+      "rationale": [
+        "Facilita manutenção",
+        "Permite reutilização de componentes de teste",
+        "Melhora legibilidade"
+      ],
+      "evaluation_criteria": {
+        "positive": "Testes usam métodos auxiliares bem definidos e reutilizáveis (fixtures, helpers)",
+        "negative": "Código duplicado entre testes, sem modularização"
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void testA() {\n    Database db = new Database();\n    db.connect();\n    // teste...\n}\n\n@Test\npublic void testB() {\n    Database db = new Database();\n    db.connect(); // Código duplicado\n    // teste...\n}"
+        },
+        "correct": {
+          "language": "java",
+          "code": "@Before\npublic void setUp() {\n    database = new Database();\n    database.connect();\n}\n\n@Test\npublic void testA() { /* usa database */ }\n\n@Test\npublic void testB() { /* usa database */ }"
+        }
+      }
+    },
+    {
+      "code": "CS-06",
+      "title": "Análise Detalhada de Tamanho e Complexidade",
+      "title_en": "Detailed Analysis of Size and Complexity",
+      "category": "Common Sense",
+      "principle": "Manter testes pequenos e focados.",
+      "rationale": [
+        "Testes grandes são difíceis de entender",
+        "Complexidade dificulta debugging",
+        "Testes simples são mais confiáveis"
+      ],
+      "evaluation_criteria": {
+        "positive": "Métodos de teste têm menos de 20 linhas e complexidade ciclomática baixa",
+        "negative": "Métodos de teste muito longos (>50 linhas) ou com alta complexidade ciclomática"
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void testComplexWorkflow() {\n    // 100+ linhas de código\n    // Múltiplos loops e condicionais\n    // Difícil de entender e manter\n}"
+        },
+        "correct": {
+          "language": "java",
+          "code": "@Test\npublic void testUserCreation() {\n    User user = service.createUser(\"John\");\n    assertNotNull(user);\n    assertEquals(\"John\", user.getName());\n}"
+        }
+      }
+    },
+    {
+      "code": "CS-07",
+      "title": "Design Complexo para Detecção de Falhas",
+      "title_en": "Complex Design for Fault Detection",
+      "category": "Common Sense",
+      "principle": "Alguns testes complexos são necessários para detectar problemas profundos.",
+      "rationale": [
+        "Bugs complexos requerem testes complexos",
+        "Integração de múltiplos componentes precisa ser testada",
+        "Balancear com CS-06"
+      ],
+      "evaluation_criteria": {
+        "positive": "Existem testes de integração ou end-to-end que validam fluxos complexos quando necessário",
+        "negative": "Apenas testes unitários simples, sem validação de cenários complexos críticos"
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "// Apenas testes unitários isolados\n// Sem testes de integração para fluxos críticos"
+        },
+        "correct": {
+          "language": "java",
+          "code": "@Test\npublic void testCompleteCheckoutWorkflow() {\n    // Teste de integração validando:\n    // Carrinho -> Pagamento -> Estoque -> Notificação\n    // Complexidade justificada pela criticidade\n}"
+        }
+      }
+    },
+    {
+      "code": "CS-08",
+      "title": "Manutenção Completa do Código de Teste",
+      "title_en": "Complete Maintenance of Test Code",
+      "category": "Common Sense",
+      "principle": "Código de teste deve ser mantido com a mesma qualidade do código de produção.",
+      "rationale": [
+        "Testes desatualizados são inúteis",
+        "Refatoração deve incluir testes",
+        "Qualidade do teste = qualidade do produto"
+      ],
+      "evaluation_criteria": {
+        "positive": "Testes são atualizados quando o código de produção muda, seguem padrões de código limpo",
+        "negative": "Testes ignorados (commented out), desatualizados ou com código de baixa qualidade"
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "// @Test\n// public void testOldFeature() {\n//     // Teste comentado em vez de removido/atualizado\n// }"
+        },
+        "correct": {
+          "language": "java",
+          "code": "@Test\npublic void testNewFeature() {\n    // Teste atualizado para refletir mudanças\n    // Código limpo e bem estruturado\n}"
+        }
+      }
+    },
+    {
+      "code": "CS-09",
+      "title": "Rastreabilidade Completa de Casos de Teste",
+      "title_en": "Complete Traceability of Test Cases",
+      "category": "Common Sense",
+      "principle": "Cada teste deve estar vinculado a um requisito específico.",
+      "rationale": [
+        "Facilita análise de impacto",
+        "Melhora gerenciamento de mudanças",
+        "Garante cobertura de requisitos"
+      ],
+      "evaluation_criteria": {
+        "positive": "Testes incluem referências a requisitos (via anotações, comentários ou naming conventions)",
+        "negative": "Impossível rastrear qual requisito um teste valida"
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void test1() {\n    // Sem indicação do requisito testado\n}"
+        },
+        "correct": {
+          "language": "java",
+          "code": "/**\n * Testa o requisito REQ-001: Sistema deve validar email\n * @requirement REQ-001\n */\n@Test\npublic void testEmailValidation_REQ001() { /* ... */ }"
+        }
+      }
+    },
+    {
+      "code": "CS-10",
+      "title": "Uso Rigoroso de Testes de Performance e Segurança",
+      "title_en": "Strict Use of Performance and Security Testing",
+      "category": "Common Sense",
+      "principle": "Testes não-funcionais devem ser separados dos funcionais.",
+      "rationale": [
+        "Requisitos diferentes",
+        "Ferramentas específicas",
+        "Execução em ambientes distintos"
+      ],
+      "evaluation_criteria": {
+        "positive": "Testes de performance e segurança estão em suites separadas com ferramentas apropriadas",
+        "negative": "Testes de performance misturados com testes funcionais"
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void testUserCreation() {\n    long start = System.currentTimeMillis();\n    createUser();\n    long duration = System.currentTimeMillis() - start;\n    assertTrue(duration < 100); // Performance test misturado\n}"
+        },
+        "correct": {
+          "language": "java",
+          "code": "// Suite funcional\n@Test\npublic void testUserCreation() { /* ... */ }\n\n// Suite de performance separada (JMeter, Gatling, etc.)\n@PerformanceTest\npublic void testUserCreationPerformance() { /* ... */ }"
+        }
+      }
+    },
+    {
+      "code": "CS-11",
+      "title": "Revisão Regular de Casos de Teste",
+      "title_en": "Regular Review of Test Cases",
+      "category": "Common Sense",
+      "principle": "Testes devem ser revisados periodicamente.",
+      "rationale": [
+        "Requisitos mudam",
+        "Código evolui",
+        "Testes obsoletos devem ser removidos"
+      ],
+      "evaluation_criteria": {
+        "positive": "Evidências de revisão periódica (commits de atualização, remoção de testes obsoletos)",
+        "negative": "Testes nunca atualizados, acumulação de testes obsoletos"
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "// Testes de 2015 nunca revisados\n// Testando features que não existem mais"
+        },
+        "correct": {
+          "language": "java",
+          "code": "// Testes atualizados regularmente\n// Testes obsoletos removidos\n// Documentação de quando e por que foram atualizados"
+        }
+      }
+    },
+    {
+      "code": "CS-12",
+      "title": "Compreensão Clara de Casos de Teste",
+      "title_en": "Clear Understanding of Test Cases",
+      "category": "Common Sense",
+      "principle": "Cada teste deve ter propósito claro e inequívoco.",
+      "rationale": [
+        "Facilita manutenção",
+        "Melhora comunicação",
+        "Reduz ambiguidade"
+      ],
+      "evaluation_criteria": {
+        "positive": "Nomes de testes descritivos, comentários explicativos quando necessário",
+        "negative": "Nomes genéricos (test1, test2) ou propósito do teste não é claro"
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void test1() {\n    // O que este teste valida?\n}"
+        },
+        "correct": {
+          "language": "java",
+          "code": "@Test\npublic void testUserRegistration_shouldSendWelcomeEmail() {\n    // Propósito claro no nome\n}"
+        }
+      }
+    },
+    {
+      "code": "CS-13",
+      "title": "Cobertura Estruturada do Processo de Teste",
+      "title_en": "Structured Coverage of Testing Process",
+      "category": "Common Sense",
+      "principle": "Usar abordagens estruturadas (top-down, bottom-up) para testes de integração.",
+      "rationale": [
+        "Garante cobertura sistemática",
+        "Facilita identificação de problemas de integração",
+        "Melhora planejamento de testes"
+      ],
+      "evaluation_criteria": {
+        "positive": "Estratégia clara de integração (top-down, bottom-up, ou sandwich)",
+        "negative": "Testes de integração ad-hoc sem estratégia definida"
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "// Testes de integração aleatórios\n// Sem ordem ou estratégia clara"
+        },
+        "correct": {
+          "language": "java",
+          "code": "// Estratégia bottom-up:\n// 1. Testar camada de dados\n// 2. Testar camada de negócio\n// 3. Testar camada de apresentação\n// 4. Testar integração completa"
+        }
+      }
+    },
+    {
+      "code": "CS-14",
+      "title": "Garantia Completa da Qualidade do Código de Teste",
+      "title_en": "Complete Assurance of Test Code Quality",
+      "category": "Common Sense",
+      "principle": "Usar métricas de cobertura, mas não depender apenas delas.",
+      "rationale": [
+        "100% cobertura ≠ 100% qualidade",
+        "Métricas são indicadores, não garantias",
+        "Qualidade > quantidade"
+      ],
+      "evaluation_criteria": {
+        "positive": "Uso de múltiplas métricas (cobertura, mutation score, análise estática)",
+        "negative": "Dependência exclusiva de cobertura de código como métrica de qualidade"
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "// \"Temos 100% de cobertura, então estamos seguros!\"\n// Mas testes sem asserções ou com asserções fracas"
+        },
+        "correct": {
+          "language": "java",
+          "code": "// Combinar:\n// - Cobertura de código (>80%)\n// - Mutation score (>70%)\n// - Code review de testes\n// - Análise de qualidade de asserções"
+        }
+      }
+    },
+    {
+      "code": "LS-01",
+      "title": "Utilização Adequada de Cobertura de Código",
+      "title_en": "Proper Utilization of Test Code Coverage",
+      "category": "Literature Supported",
+      "principle": "Alta cobertura não significa necessariamente testes efetivos.",
+      "rationale": [
+        "Cobertura mede execução, não qualidade",
+        "Possível ter 100% cobertura com asserções fracas",
+        "Foco deve ser em qualidade, não apenas quantidade"
+      ],
+      "evaluation_criteria": {
+        "positive": "Testes com alta cobertura E asserções significativas que validam comportamento",
+        "negative": "Alta cobertura mas testes sem asserções ou com asserções triviais"
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void testCalculator() {\n    calculator.add(2, 2); // Executa o código\n    // Sem asserção! Cobertura alta, qualidade baixa\n}"
+        },
+        "correct": {
+          "language": "java",
+          "code": "@Test\npublic void testCalculator() {\n    int result = calculator.add(2, 2);\n    assertEquals(4, result); // Valida o comportamento\n}"
+        }
+      }
+    },
+    {
+      "code": "LS-02",
+      "title": "Utilização Necessária de Testes Ausentes",
+      "title_en": "Required Utilization of Missing Tests",
+      "category": "Literature Supported",
+      "principle": "Identificar gaps na cobertura e criar testes faltantes.",
+      "rationale": [
+        "Código não testado é código não confiável",
+        "Bugs frequentemente aparecem em áreas não testadas",
+        "Análise de gaps é essencial"
+      ],
+      "evaluation_criteria": {
+        "positive": "Processo sistemático de identificação e criação de testes para gaps de cobertura",
+        "negative": "Áreas críticas do código sem testes"
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "// Método crítico de pagamento sem testes\npublic void processPayment(Payment p) {\n    // Código não testado\n}"
+        },
+        "correct": {
+          "language": "java",
+          "code": "@Test\npublic void testProcessPayment_validCard() { /* ... */ }\n\n@Test\npublic void testProcessPayment_invalidCard() { /* ... */ }\n\n@Test\npublic void testProcessPayment_insufficientFunds() { /* ... */ }"
+        }
+      }
+    },
+    {
+      "code": "LS-03",
+      "title": "Utilização Eficiente de Cobertura de Código",
+      "title_en": "Efficient Utilization of Test Code Coverage",
+      "category": "Literature Supported",
+      "principle": "Cobertura deve incluir padrões de falha e casos extremos.",
+      "rationale": [
+        "Não basta executar o código",
+        "Necessário testar condições de erro",
+        "Edge cases revelam bugs ocultos"
+      ],
+      "evaluation_criteria": {
+        "positive": "Testes cobrem branches de erro, valores nulos, strings vazias, listas vazias, etc.",
+        "negative": "Cobertura apenas de happy paths, ignorando edge cases"
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void testProcessString() {\n    assertEquals(\"HELLO\", processor.process(\"hello\"));\n    // Falta testar null, string vazia, caracteres especiais\n}"
+        },
+        "correct": {
+          "language": "java",
+          "code": "@Test\npublic void testProcessString_normal() { /* ... */ }\n\n@Test\npublic void testProcessString_emptyString() { /* ... */ }\n\n@Test\npublic void testProcessString_nullString() { /* ... */ }\n\n@Test\npublic void testProcessString_specialCharacters() { /* ... */ }"
+        }
+      }
+    },
+    {
+      "code": "LS-04",
+      "title": "Pegada Pequena de Geração de Código de Teste",
+      "title_en": "Small Test Code Generation Footprint",
+      "category": "Literature Supported",
+      "principle": "Testes devem executar rapidamente e evitar computações desnecessárias.",
+      "rationale": [
+        "Testes lentos desencorajam execução frequente",
+        "Feedback rápido é essencial",
+        "Suites grandes devem executar em minutos, não horas"
+      ],
+      "evaluation_criteria": {
+        "positive": "Testes unitários executam em milissegundos, uso de mocks para dependências externas",
+        "negative": "Testes lentos devido a I/O desnecessário, chamadas de rede, ou operações pesadas"
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void testUserService() {\n    // Conecta ao banco de dados real\n    // Faz chamadas HTTP reais\n    // Lê arquivos do disco\n    // Teste lento (segundos)\n}"
+        },
+        "correct": {
+          "language": "java",
+          "code": "@Test\npublic void testUserService() {\n    // Usa mocks para dependências\n    UserRepository mockRepo = mock(UserRepository.class);\n    UserService service = new UserService(mockRepo);\n    // Teste rápido (milissegundos)\n}"
+        }
+      }
+    },
+    {
+      "code": "LS-05",
+      "title": "Priorização Completa do Design de Casos de Teste",
+      "title_en": "Complete Prioritization of Test Cases Design",
+      "category": "Literature Supported",
+      "principle": "Priorizar testes baseado em requisitos funcionais e não-funcionais.",
+      "rationale": [
+        "Recursos limitados",
+        "Alguns testes são mais críticos",
+        "ROI de testes varia"
+      ],
+      "evaluation_criteria": {
+        "positive": "Testes críticos executados primeiro, estratégia clara de priorização",
+        "negative": "Todos os testes tratados com mesma prioridade, sem estratégia"
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "// Todos os testes executados em ordem alfabética\n// Sem distinção entre críticos e não-críticos"
+        },
+        "correct": {
+          "language": "java",
+          "code": "// Suite 1: Testes críticos (smoke tests)\n// Suite 2: Testes de regressão\n// Suite 3: Testes completos\n// Priorização baseada em criticidade e frequência de falha"
+        }
+      }
+    },
+    {
+      "code": "LS-06",
+      "title": "Adição Responsável de Manutenção de Código de Teste",
+      "title_en": "Responsible Addition of Test Code Maintenance",
+      "category": "Literature Supported",
+      "principle": "Manter suite atualizada com bugs corrigidos (regression tests).",
+      "rationale": [
+        "Bugs corrigidos podem reaparecer",
+        "Testes de regressão previnem reintrodução",
+        "Documentam comportamento esperado"
+      ],
+      "evaluation_criteria": {
+        "positive": "Para cada bug corrigido, existe um teste de regressão correspondente",
+        "negative": "Bugs corrigidos sem testes de regressão"
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "// Bug #1234 corrigido\n// Mas nenhum teste adicionado para prevenir regressão"
+        },
+        "correct": {
+          "language": "java",
+          "code": "/**\n * Regression test for Bug #1234\n * Sistema travava ao processar string com emoji\n */\n@Test\npublic void testProcessString_withEmoji_Bug1234() {\n    String result = processor.process(\"Hello 😀\");\n    assertNotNull(result);\n}"
+        }
+      }
+    },
+    {
+      "code": "LS-07",
+      "title": "Utilização Adequada de Asserções de Teste",
+      "title_en": "Suitable Utilization of Test Assertions",
+      "category": "Literature Supported",
+      "principle": "Usar asserções efetivamente para detectar falhas sutis.",
+      "rationale": [
+        "Asserções são o coração dos testes",
+        "Asserções fracas não detectam problemas",
+        "Múltiplas asserções podem ser necessárias"
+      ],
+      "evaluation_criteria": {
+        "positive": "Asserções específicas e significativas que validam todos os aspectos relevantes",
+        "negative": "Asserções genéricas (assertTrue(true)) ou ausência de asserções"
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void testUserCreation() {\n    User user = service.createUser(\"John\", \"john@example.com\");\n    assertTrue(user != null); // Asserção fraca\n}"
+        },
+        "correct": {
+          "language": "java",
+          "code": "@Test\npublic void testUserCreation() {\n    User user = service.createUser(\"John\", \"john@example.com\");\n    assertNotNull(user);\n    assertNotNull(user.getId());\n    assertEquals(\"John\", user.getName());\n    assertEquals(\"john@example.com\", user.getEmail());\n    assertTrue(user.isActive());\n}"
+        }
+      }
+    },
+    {
+      "code": "LS-08",
+      "title": "Adição Responsável de Comentários de Depuração",
+      "title_en": "Responsible Addition of Test Debugging Comments",
+      "category": "Literature Supported",
+      "principle": "Documentar padrões de falha e comportamentos esperados.",
+      "rationale": [
+        "Facilita debugging",
+        "Explica intenção do teste",
+        "Ajuda futuros mantenedores"
+      ],
+      "evaluation_criteria": {
+        "positive": "Comentários explicam o porquê do teste, não o quê (que deve estar claro no código)",
+        "negative": "Testes sem documentação ou com comentários inúteis"
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void testX() {\n    // Testa X\n    // Comentário óbvio e inútil\n}"
+        },
+        "correct": {
+          "language": "java",
+          "code": "@Test\npublic void testConcurrentAccess() {\n    // Bug #1234: Sistema travava com acessos simultâneos\n    // Este teste garante que o lock funciona corretamente\n    // Esperado: Ambas threads completam sem deadlock\n    /* ... */\n}"
+        }
+      }
+    },
+    {
+      "code": "LS-09",
+      "title": "Design Determinístico de Resultados de Teste",
+      "title_en": "Deterministic Design of Test Results",
+      "category": "Literature Supported",
+      "principle": "Testes devem sempre retornar os mesmos resultados dados os mesmos inputs.",
+      "rationale": [
+        "Testes flaky são inúteis",
+        "Não-determinismo dificulta debugging",
+        "Confiança na suite de testes"
+      ],
+      "evaluation_criteria": {
+        "positive": "Testes são determinísticos, sem dependência de tempo real, ordem de execução ou estado externo",
+        "negative": "Testes flaky que falham intermitentemente"
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void testTimestamp() {\n    long timestamp = System.currentTimeMillis();\n    // Resultado varia a cada execução\n}"
+        },
+        "correct": {
+          "language": "java",
+          "code": "@Test\npublic void testTimestamp() {\n    Clock fixedClock = Clock.fixed(\n        Instant.parse(\"2024-01-01T00:00:00Z\"),\n        ZoneId.of(\"UTC\")\n    );\n    long timestamp = fixedClock.millis();\n    // Resultado sempre o mesmo\n}"
+        }
+      }
+    },
+    {
+      "code": "LS-10",
+      "title": "Evitar Completamente Efeitos Colaterais de Teste",
+      "title_en": "Complete Avoidance of Test Side Effects",
+      "category": "Literature Supported",
+      "principle": "Testes não devem modificar estado compartilhado ou causar dependências.",
+      "rationale": [
+        "Efeitos colaterais causam falhas intermitentes",
+        "Dificulta paralelização",
+        "Viola independência (CS-02)"
+      ],
+      "evaluation_criteria": {
+        "positive": "Testes isolam estado, usam setup/teardown apropriados",
+        "negative": "Testes modificam variáveis globais, arquivos compartilhados, ou estado de banco de dados"
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "@Test\npublic void testA() {\n    GlobalState.counter++; // Modifica estado global\n}\n\n@Test\npublic void testB() {\n    assertEquals(0, GlobalState.counter); // Pode falhar se testA executou antes\n}"
+        },
+        "correct": {
+          "language": "java",
+          "code": "@Before\npublic void setUp() {\n    database = new InMemoryDatabase();\n}\n\n@After\npublic void tearDown() {\n    database.clear();\n}"
+        }
+      }
+    },
+    {
+      "code": "LS-11",
+      "title": "Utilização Adequada de Rótulos e Categorias",
+      "title_en": "Suitable Utilization of Test Labels and Categories",
+      "category": "Literature Supported",
+      "principle": "Organizar testes com labels e categorias.",
+      "rationale": [
+        "Facilita execução seletiva",
+        "Permite separar testes rápidos/lentos",
+        "Melhora organização da suite"
+      ],
+      "evaluation_criteria": {
+        "positive": "Testes categorizados (unit, integration, e2e) e com tags apropriadas",
+        "negative": "Todos os testes misturados sem organização"
+      },
+      "examples": {
+        "violation": {
+          "language": "java",
+          "code": "// Todos os testes na mesma suite\n// Sem distinção entre unitários e de integração"
+        },
+        "correct": {
+          "language": "java",
+          "code": "@Category(UnitTest.class)\n@Test\npublic void testBusinessLogic() { /* ... */ }\n\n@Category(IntegrationTest.class)\n@Test\npublic void testDatabaseIntegration() { /* ... */ }\n\n@Category({SlowTest.class, IntegrationTest.class})\n@Test\npublic void testFullWorkflow() { /* ... */ }"
+        }
+      }
+    }
+  ]
+}
