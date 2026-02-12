@@ -46,6 +46,16 @@ class TestAnalyzerAgent:
         """
         logger.info(f"Analyzing test class: {test_class_name} (mode: {mode})")
         
+        # Check test file size and warn if it's too large
+        test_code_lines = len(test_code.split('\n'))
+        test_code_chars = len(test_code)
+        logger.debug(f"Test file size: {test_code_lines} lines, {test_code_chars} chars")
+        
+        if test_code_lines > 200 or test_code_chars > 10000:
+            logger.warning(f"Large test file detected ({test_code_lines} lines, {test_code_chars} chars)")
+            logger.warning("This may cause token limit issues with some LLM models")
+            logger.warning("Consider using a model with larger context window (e.g., openai/gpt-4o-mini)")
+        
         # Build system prompt
         system_prompt = self._build_system_prompt(mode)
         
@@ -102,15 +112,31 @@ Your task is to analyze the provided test code and compare it against the **25 b
 - Every test method MUST have evaluations for all 25 practices
 - The `"status"` field must be: `"✔️"` (Compliant), `"❌"` (Non-Compliant), or `"⚪"` (Not Applicable)
 - Compliance scores are calculated as: (compliant ✔️ / 25) * 100 and formatted as "X%"
-- DO NOT include any text outside the JSON structure"""
+- DO NOT include any text outside the JSON structure
+
+📌 **CRITICAL: Consistent Evaluation**
+- Evaluate STRICTLY based on the code provided - do not assume missing elements exist
+- Use ✔️ ONLY if the practice is clearly implemented in the code
+- Use ❌ if the practice is not implemented or only partially implemented
+- Use ⚪ ONLY if the practice is genuinely not applicable to this specific test
+- Be CONSERVATIVE: when in doubt between ✔️ and ❌, choose ❌
+- The evaluation criteria provided for each practice are DEFINITIVE - follow them exactly"""
         
         if mode == 'improve':
-            base_prompt += """- The "suggested_code" field must be a fully formatted and improved version of the test case, 
-implementing all applicable best practices while maintaining the original logic. 
-The improvements must follow the 25 best practices, ensuring that neither test coverage 
-nor mutation score is affected. Any modifications must preserve the effectiveness 
-of the test suite, ensuring that all edge cases and possible mutations remain 
-adequately validated.
+            base_prompt += """
+
+📌 **CRITICAL: Improved Code Generation**
+- The "suggested_code" field in the FIRST test method MUST contain the COMPLETE improved test class
+- Include package declaration, imports, class declaration, ALL test methods, and closing brace
+- DO NOT put the improved class in each method - only in the FIRST method's "suggested_code"
+- For subsequent methods, set "suggested_code" to an empty string ""
+- The improved class must:
+  * Preserve the ORIGINAL class name (e.g., UserServiceTest, not UserServiceTest_improved)
+  * Implement all applicable best practices
+  * Maintain the original test logic and coverage
+  * Be fully compilable and runnable Java code
+  * NOT include any commented-out code
+  * NOT repeat the class definition multiple times
 
 """
         

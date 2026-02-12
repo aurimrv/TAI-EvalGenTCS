@@ -133,15 +133,14 @@ class PracticeManager:
         Generate LLM prompt section with practices.
         
         Args:
-            mode: 'check' for compact version, 'improve' for full version
+            mode: 'check' or 'improve' (both use full descriptions for consistency)
         
         Returns:
             Formatted string for LLM prompt
         """
-        if mode == 'check':
-            return self._generate_compact_prompt()
-        else:
-            return self._generate_full_prompt()
+        # IMPORTANT: Use full descriptions in BOTH modes for consistent compliance evaluation
+        # The only difference between modes is whether suggested_code is requested
+        return self._generate_full_prompt()
     
     def _generate_compact_prompt(self) -> str:
         """Generate ultra-compact prompt for check mode."""

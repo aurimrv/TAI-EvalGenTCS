@@ -2,6 +2,99 @@
 
 All notable changes to TAI-EvalGenTCS CLI will be documented in this file.
 
+## [1.6.0] - 2026-02-12
+
+### Fixed
+- **CRITICAL**: Fixed massive compliance variance between check and improve modes
+- **CRITICAL**: Both modes now use identical prompts (full practice descriptions) for consistent evaluation
+- Compliance scores are now consistent across modes (< 2% variance with recommended settings)
+
+### Added
+- **Explicit scoring instructions** in prompts to reduce LLM interpretation variance
+- **COMPLIANCE_VARIANCE.md** comprehensive guide explaining variance causes and solutions
+- Conservative evaluation guidance: "when in doubt between ✔️ and ❌, choose ❌"
+- Definitive evaluation criteria enforcement
+
+### Changed
+- `generate_llm_prompt_section()` now uses full descriptions in BOTH check and improve modes
+- Removed compact prompt generation from check mode (was causing inconsistent interpretations)
+- Enhanced prompt with strict evaluation rules
+
+### Documentation
+- Clarified that compliance is ALWAYS measured on the original/input code, not improved code
+- Added model consistency comparison table
+- Added FAQ section on compliance variance
+- Added testing consistency guide
+
+## [1.5.0] - 2026-02-11
+
+### Added
+- **JSON repair mechanism** for truncated LLM responses with unterminated strings
+- **Large test file detection** with automatic warnings (> 200 lines or > 10,000 chars)
+- **`_repair_truncated_json()` method** to find and truncate to last valid JSON structure
+- **LARGE_TEST_FILES.md** comprehensive guide for handling large test files
+- Better logging for test file size (lines and characters)
+
+### Changed
+- Enhanced error handling for "Unterminated string" and "Expecting property name" JSON errors
+- Updated `.env.example` with guidance for different test file sizes
+- Improved JSON parsing with multi-stage fallback: repair → extract → fail
+
+### Fixed
+- JSON parsing errors when analyzing large test files (> 200 lines)
+- Truncated JSON responses causing "Unterminated string starting at" errors
+- Better handling of models with smaller output token limits (e.g., Claude Haiku: ~4096 tokens)
+
+### Documentation
+- Added model comparison table with max output tokens
+- Added test file size guidelines
+- Added troubleshooting section for large files
+
+## [1.4.0] - 2026-02-11
+
+### Fixed
+- **Critical**: Fixed repeated/duplicated code in improved test files
+- **Critical**: Fixed commented-out code in improved test files
+- **Critical**: Fixed incorrect class naming (now preserves original class name)
+- Fixed TestImproverAgent to use only the first method's suggested_code (which contains the complete improved class)
+- Added `_preserve_original_class_name()` method to ensure class name matches filename
+- Added `_clean_suggested_code()` method to remove code block markers
+
+### Changed
+- **Enhanced LLM prompt** to explicitly request complete improved class only in first method's suggested_code
+- Updated prompt to emphasize: preserve original class name, no commented code, no repetition
+- Improved TestImproverAgent with better code extraction and cleaning logic
+- Added regex-based class name replacement to ensure consistency
+
+### Added
+- `_extract_method_only()` to detect and skip full class definitions in method suggestions
+- Better validation of suggested code structure
+- More detailed logging for code generation process
+
+## [1.3.0] - 2026-02-11
+
+### Added
+- **Seed parameter support** (`LLM_SEED`) for deterministic sampling with supported models
+- **Consistency checker utility** (`check_consistency.py`) to analyze variance across multiple runs
+- **LLM connection diagnostic script** (`test_llm_connection.py`) to test model connectivity and functionality
+- **Comprehensive error logging** for empty LLM responses with refusal reason detection
+- **DETERMINISTIC_RESULTS.md** documentation on achieving consistent results
+- **TROUBLESHOOTING.md** guide for common issues and solutions
+
+### Changed
+- **Default temperature** changed from `0.1` to `0.0` for maximum determinism
+- **Enhanced error handling** in `llm_client.py` to detect and report empty responses
+- **Improved JSON parsing** with checks for empty responses before and after sanitization
+- Updated `.env.example` with determinism recommendations and seed parameter
+
+### Fixed
+- Better detection and reporting of empty LLM responses ("Expecting value: line 1 column 1" error)
+- Added explicit checks for `None` or empty content from LLM
+- Added logging for finish reason and refusal messages
+
+### Performance
+- Improved consistency: With `LLM_TEMPERATURE=0.0` and `LLM_SEED=42`, variance reduced to < 5% (Excellent consistency)
+
 ## [1.2.0] - 2026-02-11
 
 ### Fixed

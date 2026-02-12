@@ -108,6 +108,11 @@ class LLMClient:
                     "max_tokens": self.settings.llm_max_tokens,
                 }
                 
+                # Add seed for deterministic sampling (if supported by model)
+                if self.settings.llm_seed is not None:
+                    request_params["seed"] = self.settings.llm_seed
+                    logger.debug(f"Using seed: {self.settings.llm_seed} for deterministic sampling")
+                
                 # Add response format if provided
                 # Note: Some models don't support strict JSON schema mode
                 if response_format:
@@ -126,6 +131,15 @@ class LLMClient:
                 
                 # Extract content
                 content = response.choices[0].message.content
+                
+                # Check for empty or None response
+                if content is None or content.strip() == "":
+                    logger.error("LLM returned empty response!")
+                    logger.error(f"Response object: {response}")
+                    logger.error(f"Finish reason: {response.choices[0].finish_reason}")
+                    if hasattr(response.choices[0].message, 'refusal') and response.choices[0].message.refusal:
+                        logger.error(f"Refusal reason: {response.choices[0].message.refusal}")
+                    raise ValueError("LLM returned empty response. This may indicate a content filter issue or model configuration problem.")
                 
                 logger.debug(f"Received response from LLM ({len(content)} chars)")
                 
@@ -178,8 +192,19 @@ class LLMClient:
         
         # Sanitize and parse JSON
         try:
+            # Check if response is empty
+            if not response or response.strip() == "":
+                logger.error("Cannot parse JSON from empty response")
+                raise json.JSONDecodeError("Empty response from LLM", "", 0)
+            
             # Remove code block delimiters if present (```json ... ```)
             cleaned_response = self._sanitize_json_response(response)
+            
+            # Check again after sanitization
+            if not cleaned_response or cleaned_response.strip() == "":
+                logger.error("Response became empty after sanitization")
+                logger.error(f"Original response: {repr(response[:200])}")
+                raise json.JSONDecodeError("Empty response after sanitization", "", 0)
             
             # Parse JSON
             return json.loads(cleaned_response)
@@ -188,6 +213,16 @@ class LLMClient:
             logger.error(f"Failed to parse JSON response: {e}")
             logger.debug(f"Response content (first 500 chars): {response[:500]}")
             logger.debug(f"Response content (last 500 chars): {response[-500:]}")
+            
+            # Try to repair the JSON if it's truncated
+            if "Unterminated string" in str(e) or "Expecting property name" in str(e):
+                logger.warning("JSON appears to be truncated, attempting to repair...")
+                repaired_json = self._repair_truncated_json(cleaned_response)
+                if repaired_json:
+                    try:
+                        return json.loads(repaired_json)
+                    except json.JSONDecodeError:
+                        logger.warning("JSON repair failed")
             
             # Try to extract JSON from the response
             extracted_json = self._extract_json_from_text(response)
@@ -222,6 +257,61 @@ class LLMClient:
             cleaned = cleaned[:-3]  # Remove ```
         
         return cleaned.strip()
+    
+    def _repair_truncated_json(self, json_str: str) -> Optional[str]:
+        """
+        Attempt to repair truncated JSON by closing unterminated strings and objects.
+        
+        Args:
+            json_str: Truncated JSON string
+        
+        Returns:
+            Repaired JSON string or None
+        """
+        try:
+            # Find the last complete JSON structure
+            # Strategy: Find the last properly closed brace and truncate there
+            brace_count = 0
+            bracket_count = 0
+            in_string = False
+            escape_next = False
+            last_valid_pos = -1
+            
+            for i, char in enumerate(json_str):
+                if escape_next:
+                    escape_next = False
+                    continue
+                
+                if char == '\\':
+                    escape_next = True
+                    continue
+                
+                if char == '"' and not in_string:
+                    in_string = True
+                elif char == '"' and in_string:
+                    in_string = False
+                elif not in_string:
+                    if char == '{':
+                        brace_count += 1
+                    elif char == '}':
+                        brace_count -= 1
+                        if brace_count == 0:
+                            last_valid_pos = i + 1
+                    elif char == '[':
+                        bracket_count += 1
+                    elif char == ']':
+                        bracket_count -= 1
+            
+            if last_valid_pos > 0:
+                repaired = json_str[:last_valid_pos]
+                logger.info(f"Truncated JSON from {len(json_str)} to {len(repaired)} chars")
+                return repaired
+            
+            return None
+            
+        except Exception as e:
+            logger.debug(f"Failed to repair truncated JSON: {e}")
+            return None
     
     def _extract_json_from_text(self, text: str) -> Optional[str]:
         """
